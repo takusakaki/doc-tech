@@ -1,0 +1,306 @@
+#+TITLE:     Intermediate_Perl.org
+#+DESCRIPTION: 
+#+KEYWORDS: 
+#+LANGUAGE:  jp
+#+OPTIONS:   H:3 num:t toc:t \n:nil @:t ::t |:t ^:t -:t f:t *:t <:t
+#+OPTIONS:   TeX:t LaTeX:t skip:nil d:nil todo:t pri:nil tags:not-in-toc
+#+INFOJS_OPT: view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
+#+EXPORT_SELECT_TAGS: export
+#+EXPORT_EXCLUDE_TAGS: noexport
+#+LINK_UP:   
+#+LINK_HOME: 
+#+XSLT: 
+
+
+---------------------------------------------------------
+* 7. サブルーチンへのリファレンス
+** 7.1 
+my $coderef = \&aaaaa;
+
+デリファレンス
+&{$coderef}(....);
+&$coderef(....);
+$coderef->(....);
+
+** 7.2 無名サブルーチン
+my $coderef = sub {.......};
+  ** subの頭に'\' を付けていないことに注意
+
+** 7.4 クロージャ
+スコープ(サブルーチン)の外に出たレキシカル変数を参照するサブルーチン
+
+---------------------------------------------------------
+* 8.
+
+** 8.4
+IO:Handleパッケージは入出力全般の基底クラス。
+通常直接使うことはなく派生クラスを使う。
+
+---------------------------------------------------------
+* 9. リファレンスを使った実践的なテクニック
+
+** 9.1
+数のソート  sort {$a <=> $b} 配列
+
+ ** <=> スペースシップ演算子
+ ** 以下と等価
+  sort {
+    if    ($a < $b) {-1}
+    elsif ($a > $b) {+1}
+    else            { 0}
+  } 配列
+
+** 9.4 シュワルツ変換
+ my @output_data = 
+   map $_->[0],
+   sort { $a->[1] <=> $b->[1]}
+   map [ $_, calc_something($_) ],
+   @input_data;
+
+  ソートの材料とする値を最初のmapで作成し
+  sortでその値でソートし
+  次のmapで元の値を取り出す
+
+---------------------------------------------------------
+* 10. 大規模なプログラムの構築
+
+** 10.2
+  ファイルの内容を１つのスカラー変数に入れる
+   undef $/;
+   $buf = <$fh>;
+    ** undef $/;としない場合
+       $buf = join '', <$fh>;  と同じ
+
+** 10.3 do
+  do 'navigation.pm';  インクルード
+  - 重複して呼び出すと警告が出る
+  - die $@ if $@  というエラー処理が必要
+  
+** 10.4 require
+  - 重複して呼び出しても問題ない
+  - 読み込みに失敗したら異常終了するので die...などのチェックは不要
+  - ファイル内で最後に評価される式は真の値を返さなければならない
+
+
+---------------------------------------------------------
+* 11. オブジェクト入門
+
+** 11.3
+  "Class->" で呼びだすと、第1引数はクラス名になる
+  Class->method(@args);
+  Class::method('Class', @args);
+
+  ** "$インスタンス変数->"で呼び出した場合は、
+     第1引数はインスタンスになる (-->12.8)
+
+** 11.5
+ 継承の記述
+  @Cow::ISA = qw(Animal); パッケージ名によりstrictの警告を抑止
+  ----
+  package Cow;
+  use vars qw(@ISA);
+  @ISA = qw(Animal);
+  ----
+  package Cow;
+  use Animal;
+  use vars qw(@ISA);
+  @ISA = qw(Animal);
+  ----
+  package Cow;
+  use base qw(Animal);  <<<<<<
+
+** 11.8 SUPER
+ sub speak {
+   my $class = shift;
+   $class->SUPER::speak;  <<<<
+
+
+
+---------------------------------------------------------
+* 12. データのあるオブジェクト
+
+** 12.1 インスタンス変数
+  bless $tv_horse, 'Horse';
+
+ blessはリファレンスの先の変数をHorseオブジェクトとする
+ オブジェクトとは「ブレスされたリファレンス」である
+
+** 12.2 インスタンスメソッド
+ $tv_horse->method();
+
+ 第1引数はインスタンスになる (-->11.3)
+
+** 12.4 コンストラクタ
+ 特に名前に決まりや制限があるわけではないが、慣例的に new を用いる
+ ** 引数のバリエーションにより複数の異なった名前の
+    コンストラクタを設けるのもあり
+
+** 12.6
+ ref演算子
+  ブレスされたリファレンスはクラス名を返す
+   ブレスされていないリファレンスは SCALARなどと返す
+   文字列に対してはundefを返す
+
+** 12.10
+ wantarray関数
+  戻り値としてリストが要求されている場合は真を返し
+  スカラーが要求されている場合は偽を返す
+  e.g.)
+   sub aaaaa {
+     wantarray ? qw(a b c) : "a,b,c";
+   }
+
+** 12.12 getter/setterの簡略的な記法
+ sub color     { $_[0]->{color} }
+ sub set_color { $_[0]->{color} = $_[1] }
+
+** 12.14
+ Carp::croak
+ メソッドを呼び出したところから届いたように
+ エラーメッセージを表示する  dieと同等
+  die  <---> croak
+  warn <---> carp
+
+---------------------------------------------------------
+* 13. オブジェクトのデストラクション
+
+** 13.1
+ リファレンスが無くなると、DESTROYメソッドが呼び出される
+
+** 13.2
+ sub add { push @{+shift}, shift}
+                  ~~~
+ Perlでは単項の+(項の先頭のプラス記号)は何もしないものと定義
+ されている。ここでは @{"shift"}と解釈されるのを防ぐ 
+
+** 13.3
+ 複数のインスタンスの取り扱い例
+  @horses = map Horse->new($_), qw(aaaa bbbb cccc);
+  $_->eat() for @horses;
+ -----
+ デストラクタには $self->SUPER::DESTROY を入れておくべき
+
+** 13.7
+ 弱いリファレンス
+  use Scalar::Util qw(weaken);
+  weaken($xxxx);
+
+---------------------------------------------------------
+* 14. オブジェクトに関する高度なトピック
+
+** 14.1 UNIVERSAL
+ 基底クラスとも考えられる
+
+** 14.2 isa / can
+ UNIVERSALパッケージで定義されている
+  Horse->isa('Animal')
+  $tv_horse->isa('Animal')
+  ----
+  $tv_horse->can('eat')
+
+ ** ref と isaの違い
+    ref RaseHorse eq 'Animal'
+    は偽になる
+     
+ ** isa/canはブレスされたリファレンスかクラス名のように見える
+    スカラーから出ないと呼び出せない
+    この対応として evalでエラーをトラップすべし
+    e.g.)
+     if( eval { $xxx->isa('Animal') } ) {...}
+      evalでエラーをトラップした場合、evalはundefを返す
+
+** 14.3 AUTOLOAD
+ メソッドが見つからない場合呼び出される
+ 引数は通常と同様（第1引数はクラス名かインスタンスリファレンス）
+ 呼び出されたメソッド名は $AUTOLOAD というパッケージ変数でわかる
+ AUTOLOAD内にサブルーチンを定義でき、実行するまでコンパイルを
+ 遅らせることができる
+
+** 14.4
+ ucfirst  引数の最初の文字を大文字に変換したものを返す
+ uc       すべての文字を大文字に変換
+
+** 14.5 Class::MethodMaker
+
+ use Class::MethodMaker
+   new_with_init => 'new',
+   get_set => [-eiffel => [qw(color height name age)]],
+   abstract => [qw(sound)],
+;
+ - newは自動生成され、initを呼び出す
+   独自の初期化はinitに記述する
+ - eiffelフラグはEiffel言語のやり方を使うことを表す
+ - get_setで指定したアクセッサが自動作成 (color, set_color)
+ - abstractは抽象メソッド、サブクラスで要定義
+
+ *** 上記は 「Intermediate Perl」に示されている内容だが
+     これは Class::MethodMakerのVersion1の記法である
+     現在はVersion2であり、以下のように記述する
+     ** Ver2ではVer1の記法もある程度サポートしている模様
+        詳細は Class::MethodMaker::V1Compat のPOD
+ use Class::MethodMaker
+   [ scalar => [qw(color height name age)],
+     new => [qw(new)],
+   ];
+
+
+---------------------------------------------------------
+* 15. Exporter
+
+** 15.1 use
+use oooo::xxx qw(aa bb cc);
+ ↓
+BEGIN {
+  require oooo::xxx;
+  oooo::xxx->import( qw(aa bb cc) );
+}
+
+- requireの::はOSネイティブのセパレータに置換され末尾に .pmが付く
+　→ require oooo/xxx.pm;
+- requireで呼び出されるファイルは真の値を返す必要があるため
+  慣例的に最後の行は1;とされる
+
+** 15.3 @EXPORTと@EXPORT_OK
+packate File::Basename;
+our @EXPORT = qw(basename, dirname, fileparse);
+use base qw(Exporter);
+
+- File::Basename->importが呼ばれ、@EXPORTの内容をインポートする
+
+our @EXPORT = qw(ooo, ooo);    デフォルトでインポートされる
+our @EXPORT_OK = qw(ooo, ooo); デフォルトではインポートされないが
+                               要求されればインポート可能
+ ** 上記以外のインポートは不可だが、ooo::xxx::iii と直接
+   呼び出すことは可能
+
+** 15.4 %EXPORT_TAGS
+インポートのグループを定義し、タグで識別することができる
+ use oooo (:タグ名);
+
+our @EXPORT = qw(......);
+our @EXPORT_OK = qw(......);
+our %EXPORT_TAGS = (
+  all       => [@EXPORT, @EXPORT_OK],
+  gps       => [qw(..., ...)],
+  direction => [qw(..., ..., ...)],
+);
+
+  ↓
+use oooo:xxx qw(:direction);
+
+** 15.5 オブジェクト指向モジュールでのエクスポート
+オブジェクト指向モジュールでは一般に何もエクスポートしない
+
+** 15.6
+ caller 組み込み関数
+ ($package, $file, $line) = caller;
+
+
+---------------------------------------------------------
+* 16.
+ cpanでのREADMEのダウンロードと表示
+ > readme ooo::xxxxx
+
+
+
+
