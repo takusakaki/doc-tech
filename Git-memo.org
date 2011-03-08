@@ -1,0 +1,111 @@
+#+TITLE:     Git-memo.org
+#+LANGUAGE:  jp
+#+TEXT:      Some descriptive text to be emitted.  Several lines OK.
+#
+# 進捗 「入門Git」からの転記 --> 
+
+* git コマンド
+** git init  リポジトリの初期化
+** git var	  変数の参照
+** git add
+git add .   ワークツリーの全てのファイルを追加("インデックスにステージする"という)
+git add -u  ワークツリー内で版管理している全てのファイルを追加
+git add -a  版管理している全てのファイルを追加してコミット (add -u + commit)
+git add -p  追加箇所を選別 (コミット内容を選別)
+git add -A  版管理していないファイルを含めた全てのファイルを追加（.gitignoreで無視しているファイルは除く）
+** git commit
+git commit -m "<comment>"  コメントを指定してコミット
+git commit -v ログ入力時に変更内容を表示
+git commit <path>   指定したファイルだけをコミット
+git commit --amend  コミットをやり直す
+** git reset
+git reset <path>  インデックスの変更をもとに戻す
+git reset HEAD^   最後のコミットオブジェクトを削除する
+git reset --hard HEAD^   最後のコミットオブジェクトを削除し、変更内容も取り消す
+** git diff
+git diff        変更点を確認（インデックス<-->ワークツリー）
+git diff HEAD   変更点を確認（HEAD<-->ワークツリー）
+git diff --cached [コミットオブジェクト(省略時はHEAD)] インデックスからの変更点を確認
+
+  HEAD <-- インデックス <-- ワークツリー
+
+  git diff          はワークツリーとの差分を表示する。引数を省略した場合、比較相手はインデックスになる
+  git diff --cached はインデックスとの差分を表示する。引数を省略した場合、比較相手はHEADになる
+
+: $ git diff
+: diff --git a/aa b/aa
+: index 72943a1..b386eef 100644
+: --- a/aa
+: +++ b/aa
+: @@ -1 +1,3 @@     <<<< マーカ
+: +aa               ---
+: +b                 ↑
+: +aa                hunk (ハンク)
+: +b                 ↓
+: +b                ---
+
+** git log
+git log      ログを参照
+git log -p   変更内容と共に表示
+git log -<n> 表示数を制限
+git log --pretty=<format>  フォーマットを指定
+         <format> oneline, shoft , medium(default), full, fuller, email, raw
+git log <path>  ファイル/ディレクトリを指定
+git log --grep=<pattern>   ログメッセージで検索
+                           (複数指定)
+                             OR検索　--grep=aa --grep=bb
+                            AND検索  -all-match --grep=aa --grep=bb
+
+** git show
+git show     最新のコミット内容を表示  (=  git log -1 -p) 
+
+** git blame <path>  ファイル内の各行がどのコミットで記録されたかを表示
+
+** git revert
+git revert <コミット>   コミットを取り消す
+** git checkout
+git checkout <path>       ワークツリーの変更を取り消す (インデックスの状態に戻す)
+git checkout HEAD <path>  ワークツリーの変更を取り消す (HEADの状態に戻す)
+
+* UseCase
+** 変更の一部分をコミットする
+変更内容の意味ごとにコミットを分割するために行う
+ - ファイル内のコミットする箇所を指定   git add -p
+ - コミットするファイルを指定          git commit <path>
+
+** 変更を取り消す
+  HEAD   インデックス  ワークツリー
+      -a->        --b->
+      --------c------->
+           
+   a) git reset <path>
+   b) git checkout <path>
+   c) git checkout HEAD <path>
+
+   git revert <コミット>   コミットを取り消す
+   git reset HEAD^        最後のコミットオブジェクトを削除する
+
+** バックアップリポジトリを作製
+mkdir -p /<backup dir>/xxxxx.git
+cd       /<backup dir>/xxxxx.git
+git --bare init
+cd <登録するファイルのあるディレクトリ>
+git push /<backup dir>/xxxxx.git <ブランチ>
+  push <どこに> <なにを> 登録する
+
+** 取得(clone)と反映(push)
+git clone <リポジトリ> <展開先のディレクトリ>
+<edit...>
+git commit ...
+git push
+ 「どこに」と「なにを」を省略
+  git clone で作ったリポジトリではデフォルトで、cloneしてきたリポジトリに対して、
+  双方のリポジトリで共有しているブランチを全て転送する
+
+
+
+
+* 資料
+(a) 入門Git
+
+

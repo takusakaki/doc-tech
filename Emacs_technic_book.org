@@ -1,0 +1,1401 @@
+#+TITLE:     Emacs Technic Book のメモ
+#+LANGUAGE:  jp
+#+TEXT:      
+
+* Chapter01 設定に必要な最低限の Emacs Lisp の知識
+** Lispの評価 [1.5],[1.15]
++ M-x ielm
+  - Lispを対話的に評価(Interactive Emacs Lisp Mode)
+  - M-p, M-nでヒストリ
+  - tabで関数名を補完
++ M-:でミニバッファで評価
++ *scratch*バッファで C-j
++ C-x C-e  ポイント直前のS式を評価 [1.15]
+** Lispファイル [1.7]
+- Lispファイル  *.el
+- バイトコンパイルされたファイル  *.elc
+
+*** Lispのロード
+:M-x load-library    ファイルのロード
+:(require 'xxx)      Lisp内でファイルをロード
+:(load "xxx")"       xxx.elc(byte compiled file)をロード
+:(load "xxx.el")""   xxx.elをロード (.elcではなく)
+*** Lispを探す
+:M-x locate-library   xxx  ファイルのパスを表示
+:M-x find-library     xxx Lispファイルを開く
+** Lispファイルのバイトコンパイル
+:M-x byte-combile-file
+:C-u M-x byte-combile-file  バイトコンパイル後にロード
+** setq 変数に値を設定する [1.12]
+:(setq n 1)
+:(setq x 1  複数の変数をまとめて設定
+:      y 2
+:      z 3)
+** defun 関数/コマンドを定義 [1.13]
+:(defun 関数名 (引数) 説明文字列 内容)
+説明文字列は任意、help-for-helpのfで参照可能になる
+コマンドを定義する場合は内容の先頭に (interactive) と書く
+** add-hook [1.14]
+:(add-hook フック変数 関数)
+ e.g. (add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
+      emacs-lisp-modeにしたときにeldoc-modeを有効にする
+フック変数には以下のようなものがある
+ - before-save-hook  ファイル保存前
+ - after-save-hook   ファイル保存後
+ - find-file-hook    ファイルを開いた後
+ - メジャーモード名-hook メジャーモードに切り替えたとき
+  ....等多数
+*** ラムダ式 (lamdba)
+その場で定義される無名関数。
+通常、「defun 関数名」 とするところを
+      「lamdba」と書く
+** C-x C-e (eval-last-sexp) [1.15]
+全てのバッファで利用できる。
+これを利用して、任意の箇所に以下のような記述を埋め込んでおけば
+ハイパーリンクのような機能として利用できる。
+: (find-file "ファイル")
+: (shell-command "コマンド")
+: (man "プログラム名")
+: (info "ファイル名")
+: (install-elisp "URL")
+: (install-elisp-from-emacwiki "ファイル名")
+: (descrive-function '関数名)
+: (descrive-variable '変数名)
+: (find-function '関数名)
+: (find-variable '変数名)
+
+* Chapter02 初期設定に必要な知識
+** auto-install.el [2.2]
+http://www.emacswiki.org/emacs/download/auto-install.el をダウンロードし配置
+バイトコンパイル
+.emacsの設定
+: ;; AutoInstall  (install-elisp-from-emacswiki "auto-install.el")
+: (require 'auto-install)
+: ;; (3) Add this to your ~/.emacs to optionally specify a download directory:
+: (setq auto-install-directory "~/.emacs.d/elisp/")
+: ;; (4) Optionally, if your computer is always connected Internet when Emacs start up,
+: ;;     I recommend you add below to your ~/.emacs, to update package name when start up:
+: ;;(auto-install-update-emacswiki-package-name t)
+: ;;     And above setup is not necessary, because AutoInstall will automatically update
+: ;;     package name when you just first call `auto-install-from-emacswiki',
+: ;;     above setup just avoid *delay* when you first call `auto-install-from-emacswiki'.
+: ;;
+: ;; (5) I recommend you add below to your ~/.emacs for install-elisp users:
+: ;;(auto-install-compatibility-setup)
+
+** インストールのプロセス [2.2]
+*** 1) URLを指定する場合
+  1. M-x install-elisp [RET]  →URLを聞いてくる
+  2. URL入力[RET] →Lispファイルが表示される
+  3. 冒頭のコメントにある設定をコピーしておく
+  4. - C-c C-c →保存>バイトコンパイル>ロード が行われる
+     - C-c C-q で取り止め
+  5. .emacsなどに設定
+  
+*** 2) EmacsWiki
+  1. M-x install-elisp-from-emacswiki  →Lispファイル名を聞いてくる
+  2. Lispファイル名を入力[RET]
+  3. (後は同じ)
+
+*** 3) gist
+  1. M-x install-elisp-from-gist
+  2. ID (http://gist.github.com/ の後の数字) か URLを指定する
+  3. (後は同じ)
+
+*** アップグレード
+  新規インストールと同様の操作で行える。
+  Lispファイル名が表示されている時に M-x auto-install-buffer-diff を行うと
+  ediffが起動して差分を確認できる。
+  ＊ diff は Cocoa Emacsでは "Haven't old version exist." というエラーでうまくいかなかった。
+
+**** アップグレードに向けた .emacsへの書き込み
+コメントで 
+:;; (install-elisp-from-emacswiki "auto-install.el") 
+のように
+残しておくと、C-x C-e (eval-last-sexp) でインストールが可能になる
+
+** ELPA パッケージマネージャー [2.3]
+インストール
+: M-x install-elisp http://tromey.com/elpa/package-install.el
+ELPA実行
+: M-x package-list-packages
+
+** ヘルプ [2.5]
+: <f1> (M-x help-for-help)
+
+:v 変数名
+:f 関数
+:b キー割り当て全て
+:k キ−に割り当てられているコマンド
+:c キ−に割り当てられているコマンド名
+:
+
+** 各種設定 [p.59]
+: (menu-bar-mode -1)
+: (tool-bar-mode -1)
+: ;; リージョンに色付け
+: (setq transient-mark-mode t)
+: ;; モードラインにライン数、カラム数表示
+: (line-number-mode 1)
+: (column-number-mode 1)
+: ;; 対応するカッコを色表示する
+: (show-paren-mode 1)
+: ;; バックアップしない
+: (setq make-backup-files nil)
+: ;; ビープ音を消す
+: (setq visible-bell t)
+: ;; 履歴を次回起動時にも保存する
+: (savehist-mode 1)
+: ;; ファイル内のカーソル位置を記憶
+: (setq-default save-place t)
+: (require 'saveplace)
+: ;; GCを減らして軽くする(デフォルトの10倍)
+: (setq gc-cons-threshold (* 10 gc-cons-threshold))
+: ;; キーストロークをエコーエリアに早く表示
+: (setq echo-keystrokes 0.1)
+: ;;
+: (desktop-save-mode 1)
+: (desktop-load-default)
+
+* Chapter03 キーバインドについて
+* Chapter04 バッファ・ファイルを扱う
+** 現在位置のファイル・URLを開く [4.1]
+.emacs
+: (ffap-bindings)
+C-x C-fで、現在位置のファイル・URLがデフォルトで表示される
+
+** TODO 同一の名前のファイルを開くときバッファ名を分かりやすくする [4.2]
+"filename<2>" ではなくディレクトリ名を付加して表示する
+
+.emacs
+: (require 'uniquify)
+: ;; filename<dir> 形式のバッファ名
+: (setq uniquify-buffer-name-style 'post-forward-angle-brackets)
+: (setq uniquify-ignore-bufferes-re "*[^*]+*")
+
+** iswitchb.el [4.3]
+  /anythingでできるので未使用/
+
+** recentf.el [4.4]
+  /anythingでできるので未使用/
+
+** TODO bookmark.el [4.5] 
+:C-x r m (bookmark-set)
+:C-x r l (bookmark-bmenu-list)
+
+.emacs
+: ;;ブックマークを変更したらすぐ保存
+: (setq bookmark-save-flag 1)
+
+** emacsclient [4.6]
+.emacs
+: (server-start)
+環境変数
+: EDITOR=emasclient
+: VISUAL=emasclient
+
+起動 (コマンドラインの操作例)
+: $ emacsclient readme.txt
+:    編集が終了したら C-x #で emacsclientを終了
+: $ emacsclient +5 readme.txt  5行目を開く
+: $ emacsclient -n readme.txt  emacs上で開いたらemacsclientは終了
+: $ emacsclient --eval '(S式)' S式をEmacs Lispとして評価する
+: $ emacsclient readme.txt
+: $ emacsclient readme.txt
+
+** tempbuf.el [4.7]  ~~~省略~~~
+＊使わないバッファを自動的に消す
+** auto-save-buffers [4.8]  ~~~省略~~~
+** バージョン管理システム [4.9 - 4.11]
+:C-x v v (vc-next-action) 登録/更新
+:C-x v = (vc-diff) 差分確認
+:C-x v u (vc-revert-buffer) 変更を取り消し
+:C-x v l (vc-print-log) 変更履歴
+:    d で差分を表示する 
+:    (マークしている場合はそのリビジョンと比較する、
+:     マークしていない場合は直前のリビジョンと比較する)
+*** TODO Git専用のElisp
+ magit.el
+  download
+: $ git clone git://gitorious.org/magit/mainline.git magit
+: $ mv magit ~/.emacs.d/elisp
+  
+  .emacs
+: (add-to-list 'load-path "~/.emacs.d/elisp/magit")
+: (require 'magit)
+  コマンド
+  M-x magit-log  > 1行1コミットで表示、n,pで詳細を見る
+
+** dired [4.12]
+:起動 C-x C-f, C-x d
+ 　ワイルドカードを指定することも可能
+*** 複数のファイルの操作
+:m でマーク, uでマーク取り消し
+:  C    コピー
+:  D    削除  　　(d でマークし、xで削除も可能)
+:  R    移動・リネーム
+:  S    シンボリックリンク
+:  M    パーミション     
+:  O/G  オーナ/グループ  
+:  L    ファイルをロード 
+:  B    バイトコンパイル 
+:  X    シェルコマンドを実行
+:  g    diredバッファを更新 
+:  ^    親ディレクトリのdired
+:  %m   ファイル名が正規表現にマッチするファイルを選択
+:  %g   ファイル内容名が正規表現にマッチするファイルを選択
+:
+*** 削除の操作
+削除フラグ
+:  #    自動保存ファイル
+:  ~    バックアップファイル
+:  %d    正規表現にマッチするファイル
+  
+** wdired.el diredバッファでファイル名を編集 [4.13]
+.emacs
+: (define-key dired-mod-map "r" 'wdired-change-to-wdired-mode)
+
+:C-c C-c  変更を反映
+:C-c C-k  変更を取り消し
+:C-c Esc  編集モードをキャンセル
+:** sudoedit (sudo -e)
+root権限で編集する外部プログラムだが、環境変数VISUAL,EDITORに指定してあるものを使用する
+
+** speedbar
+ファイルおよび見出しを一覧するフレームを表示
+: M-x speedbar
+
+* Chapter05 カーソル移動
+** transient-mark-mode
+.emacs
+: (setq transient-mark-mode t)   ;常に有効にする
+リージョンに色が付く。\\
+無効なとき、一時的に有効にするには C-SPC C-SPC \\
+有効なとき、以下のコマンドは動作が変わる 
+|------------------------------+------------------------------------|
+| M-; (comment-dwin)           |                                    |
+| M-% (query-replace)          |                                    |
+| S-M-% (query-replace-regexp) |                                    |
+| C-/ (undo)                   |                                    |
+| flush-lines                  | 正規表現にマッチする行を削除する   |
+| keep-lines                   | 正規表現にマッチしない行を削除する |
+| how-many                     | 正規表現にマッチする個数を表示する |
+| M-q (fill-paragraph)         |                                    |
+|------------------------------+------------------------------------|
+
+** migemo.el [5.5]
+/未導入/
+
+** point-undo.el [5.6]
+カーソル位置を戻す
+
+インストール
+: (install-elisp-from-emacswiki "point-undo.el")
+.emacs
+: (require 'point-undo)
+: (define-key global-map (kbd "<f7>") 'point-undo)
+: (define-key global-map (kbd "S-<f7>") 'point-redo)
+
+
+** TODO bm.el [5.7]
+カーソル位置を記憶し行をハイライト表示。 \\
+記憶した箇所を保存可能。
+
+インストール
+:  (install-elisp "http://cvs.savannah.gnu.org/viewvc/*checkout*/bm/bm/bm.el")
+.emacs
+: (require 'bm)
+: (global-set-key (kbd "M-SPC") 'bm-toggle)
+: (global-set-key (kbd "M-[") 'bm-previous)
+: (global-set-key (kbd "M-]")   'bm-next)
+: ;; Restoring bookmarks when on file find.
+: (add-hook 'find-file-hooks 'bm-buffer-restore)
+: ;; Saving bookmark data on killing a buffer
+: (add-hook 'kill-buffer-hook 'bm-buffer-save)
+: ;; Saving the repository to file when on exit.
+: ;; kill-buffer-hook is not called when Emacs is killed, so we
+: ;; must save all bookmarks first.
+: (add-hook 'kill-emacs-hook '(lambda nil
+:     		             (bm-buffer-save-all)
+:   		             (bm-repository-save)))
+: ;; Update bookmark repository when saving the file.
+: (add-hook 'after-save-hook 'bm-buffer-save)
+: ;; Restore bookmarks when buffer is reverted.
+: (add-hook 'after-revert-hook 'bm-buffer-restore)
+
+* Chapter06 入力支援
+** autoinsert.el　[6.1]
+ファイル作成時にテンプレートを自動的に挿入
+/yasnippet があれば不要か？/
+
+.emacs
+: (auto-insert-mode)
+: (setq auto-insert-directory "~/.emacs.d/autoinsert_tmpl/")
+: (define-auto-insert "\\.pl$" "perl-template.pl")
+:  or
+: (define-auto-insert 'CPerl-mode "perl-template.pl")
+
+** redo+.el [6.2]
+直感的なredo
+
+インストール
+: (install-elisp-from-emacswiki "redo+.el")
+.emacs
+: (require 'redo+)
+: (global-set-key (kbd "C-M-/") 'redo)
+: (setq undo-no-redo t)  ; 過去のundoがredoされないようにする
+: (setq undo-limit 100000)
+: (setq undo-strong-limit 200000)
+
+** 矩形(sense-region.el) [6.3]
+矩形を選択しやすくする。 /未導入/
+
+*** TODO Emacs標準の矩形処理
+(参考)http://www.bookshelf.jp/soft/meadow_32.html#SEC462
+
+#+BEGIN_EXAMPLE
+C-x r k : 矩形領域を切り取る (kill-rectangle)
+C-x r o : 矩形領域だけスペースを確保する (open-rectangle)
+C-x r c : 矩形領域を消去する．スペースは確保． (clear-rectangle)
+C-x r d : 矩形領域を消去する．スペースも消す． (delete-rectangle)
+C-x r t : 矩形領域を文字で置き変える (string-rectangle)
+#+END_EXAMPLE
+
+** M-/  バッファから単語を補完 [6.4]
+M-/ (debbrev-expand)
+
+** TODO yasnippet.el  [6.5 - 6.6]
+略語から定型文を入力する
+
+*** 導入
+インストール
+http://code.google.com/p/yasnippet/ の指示に従う
+
+.emacs
+ (/ダウンロードしたものを plubins..下に配置した場合/)
+: (add-to-list 'load-path "~/.emacs.d/plugins/yasnippet")
+: (require 'yasnippet-config)
+: (yas/setup "~/.emacs.d/plugins/yasnippet")
+
+*** 使い方
+略語の後、TAB(*1)を押すと展開される。(*1)yas/trigger-key \\
+あるいは、C-c C-s (yas/insert-snippet)
+
+*** スニペットの定義
+: M-x yas/new-snippet
+
+略語を指定すると、スニペットファイルが作成される。スニペットは、.emacs.d/plugins/yasnippet/snippets/ 以下に配置される。
+
+(e.g. 略語に "pm" を指定し、Perlモジュールのスニペットを作成した例)
+: # -*- mode: snippet -*-
+: # name: Perl module header
+: # --
+: package ${1:PACKAGE_NAME};
+: use strict;
+: use warnings;
+: 
+: ${2:##### OO type module only #####
+: sub new {
+:     my $class = shift;
+:     bless {key1 => undef,
+:            key2 =>undef, }, $class;
+: }}
+: 
+: 1;
+: $0
+
+ + 操作
+  - C-c C-c (yas/load-snippet-buffer) で登録
+  - C-c C-t (yas/tryout-snippet) で動作確認
+
+ + ヘッダ部
+  | name    | 説明を書く                                                         |
+  | key     | 略語、デフォルトではファイル名が略語になるので変えたい場合だけ指定 |
+  | binding | キーバインド (例えば binding: "C-x C-z")                           |
+  
+ + プレースホルダー (可変部分)
+  -  _${数字:元のコード}_
+  -  $0 展開後のカーソル位置
+
+** キーボードマクロ [6.11]
+*** 記録、実行
++
+ - <f3>　記録開始 (kmacro-start-macro-or-insert-counter)
+ - <f4>  記録終了と実行 (kmacro-end-or-call-macro)
+
++ 伝統的なやつ
+ - C-x ( (kmacro-start-macro)
+ - C-x ) (kmacro-end-macro)
+ - C-x e (kmacro-end-and-call-macro)
+
+*** バリエーション
+- C-u <f3>　　　　後ろに追加
+- C-u 回数 <f4>　 繰り返し回数を指定
+- C-u 0 <f4>　　 バッファ末尾まで繰り返し
+- C-x q 　記録時に押すと、実行時にその箇所で一時停止し継続するかユーザに問い合わせる (記録時には何も起こらない)
+
+
+
+** キーボードマクロをコマンド化 [6.12]
+M-x name-last-kbd-macro でコマンド名を入力すると、M-x /コマンド名/ で実行可能となるが、
+永続化するには M-x insert-kbd-macroを実行し、出力されるS式を .emacsなどに保存する必要がある
+
+以下は、これらの処理を自動化するコマンド kmacro-saveを追加
+#+BEGIN_EXAMPLE
+ ;; キーボードマクロをコマンドとして保存
+ (defvar kmacro-save-file "~/.emacs.d/macros.el")  ;マクロを保存するファイル
+ (defun kmacro-save (symbol)
+   (interactive "SName for last kbd macro: ")    ;定義するコマンド名を入力
+   (name-last-kbd-macro symbol)   ;最後に定義したマクロに名前をつける
+   (with-current-buffer (find-file-noselect kmacro-save-file)
+     (goto-char (point-max))      ; マクロを保存するファイルの末尾に移動
+     (insert-kbd-macro symbol)   ;マクロの定義を挿入して保存
+     (basic-save-buffer)))
+#+END_EXAMPLE
+
+** 再帰編集 [6.13]
+コマンド実行中に他のコマンドを実行　\\
+モードラインのメジャーモード名が [] で囲まれて表示される
+#+BEGIN_EXAMPLE
+コマンドループ中に C-r 
+C-M-c 元のコマンドに制御を戻す (exit-recursive-edit)
+C-]   元のコマンドを終了      (abort-recursive-edit)
+      再帰編集を抜ける        (top-level)
+#+END_EXAMPLE
+
+** auto-complete [6.14]
+
+_[TODO]インストールしたが機能していない_
+*** 導入
+
+:  M-x auto-install-batch <ret>
+:  Extension name: auto-complete development version
+
+.emacs 
+: ;; auto-complete (auto-install-batch auto-complete)
+: (require 'auto-complete-config)
+: (global-auto-complete-mode 1)
+
+* Chapter07 検索・置換
+** M-x re-builder 正規表現を対話的に作成 [7.1]
+#+BEGIN_EXAMPLE
+C-c C-i (reb-change-syntax)  正規表現の文法を切り替える
+C-c C-r (reb-prev-match)     前のマッチ部分へジャンプ
+C-c C-s (reb-next-match)     次のマッチ部分へジャンプ
+C-c C-w (reb-copy)           コピー
+C-c C-q (reb-quit)           終了
+#+END_EXAMPLE
+
+** TODO M-x occur 正規表現にマッチした行一覧を作成 [7.2]
+/color-moccur.el も参照/
+#+BEGIN_EXAMPLE
+(occur)    正規表現に一致する箇所の一覧を作成する
+
+M-g M-n or C-`（next-error）       次のマッチ行
+M-g M-p （previous-error）   前のマッチ行
+ @@@ M-g はgoto-lineに割り当てがなので注意
+
+C-u を付けると前後の行も表示
+#+END_EXAMPLE
+
+** M-s o isearch-occur isearchからoccurへ切り替え [7.3]
+.emacs (この例では M-s o にバインド)
+: ;; isearch-occur  (install-elisp-from-emacswiki "occur-schroeder.el")
+: (require 'occur-schroeder)
+: (define-key isearch-mode-map (kbd "M-s o") 'isearch-occur)
+
+** M-% 文字列を置換 [7.4]
+*** 操作
+| y, SPC | 置換して次へ進む                   |
+| n, DEL | 置換しないで次へ進む               |
+| .      | 置換して処理を終える               |
+| !      | すべて置換                         |
+| C-r    | 再帰編集へ                         |
+| C-w    | 置換対象を削除して再帰編集へ       |
+| e      | 置換対象をミニバッファで編集       |
+| C-l    | 画面を再描画                       |
+| ,      | 置換した後その場でプロンプトを出す |
+| ?      | ヘルプ                             |
+
+- transient-mark-mode の場合は選択範囲のみを置換する
+- C-uを付けて起動すると、単語のみを置換する
+
+** C-M-% 正規表現置換 [7.5]
+/未使用/
+
+** TODO color-moccure.el [7.6]-[7.7]
+#+BEGIN_EXAMPLE
+ M-x occur-by-moccur
+ あるいは
+ isearch中に M-o で occur-by-moccur に切り替える
+#+END_EXAMPLE
+  - スペース区切りで複数のキーワードを指定すると AND検索になる
+  + *Moccur* バッファ内
+    - n,p :上下に移動
+    - RET/C-c C-c:マッチ行へ移動
+  + 編集モード(moccur-edit.el)
+    - r 編集モードに移行 (moccur-edit-mode-in)
+    - C-c C-c 変更をファイルに反映 (moccur-edit-finish-edit)
+    - C-c C-k 変更を破棄 (moccur-edit-kill-all-change)
+
+ インストール
+#+BEGIN_EXAMPLE
+ ;; color-moccur.el  (install-elisp-from-emacswiki "color-moccur.el")
+ ;; moccur-edit.el   (install-elisp-from-emacswiki "moccur-edit.el")
+#+END_EXAMPLE
+ .emacs
+#+BEGIN_EXAMPLE
+ (require 'color-moccur)
+ (setq moccur-split-word t)
+#+END_EXAMPLE
+
+** grep [7.8]
+: M-x grep 
+:
+: M-g M-n    次のマッチ行 (next-error)
+: M-g M-p    前のマッチ行 (previous-error)
+:  (この操作は M-x compile や M-x occur の結果に対する操作と同じ)
+
+** TODO grep-a-lot.el [7.10]
+複数の =*grep*= バッファを扱う
+: M-g =   	現在のgrepバッファを開く (grep-a-lot-restart-context)
+: M-g ]		次のgrepバッファを開く   (grep-a-lot-goto-next)
+: M-g [ 	前のgrepバッファを開く   (grep-a-lot-goto-previous)
+: M-g - 	現在のgrepバッファを削除 (grep-a-lot-pop-stack)
+: M-g _ 	全てのgrepバッファを削除 (grep-a-lot-clear-stack)
+
+インストール/.emacs
+:;; grep-a-lot.el   (install-elisp-from-emacswiki "grep-a-lot.el")
+:(require 'grep-a-lot)
+:(grep-a-lot-seup-keys)
+:(grep-a-lot-advise igrep)  ;; for igrep user
+
+** TODO grep-edit.el [7.11]
+検索結果を編集する
+: C-c C-e   	変更を反映する			(grep-edit-finish-edit)
+: C-c C-r   	リージョンの変更を破棄する	(grep-edit-remove-change)
+: C-c C-u   	全ての変更を破棄する		(grep-edit-remove-all-change)
+
+インストール/.emacs
+:;; grep-edit.el   (install-elisp-from-emacswiki "grep-edit.el")
+:(require 'grep-edit)
+
+* Chapter08 
+** fllow-mode [8.3]
+
+左右分割したウインドウを1つのバッファとして扱う
+:M-x follow-mode
+
+** navi2ch.el
+2ch
+
+: M-x navi2ch   起動
+:
+: C-u M-x info /<path to>/navi-2ch.info RET マニュアル
+:
+: :  検索
+:
+: a  ブックマークに登録
+: b  ブックマークの一覧
+: d  スレを隠す / h  隠したスレ一覧へ表示を切り替え (dで隠さないように戻る)
+:
+: SPC/DEL  次/前のページ
+: n/p      次/前のレス
+: TAB      '>>1' や 'http://..' に飛ぶ --> lで戻る(Lで逆方向)
+:
+: 1 (navi2ch-one-pane) 1ペイン表示に切り替え
+: 2 (navi2ch-two-pane) 2ペイン表示に切り替え
+: 3 (navi2ch-three-pane) 3ペイン表示に切り替え
+:
+: カスタマイズ
+: M-x customize-group RET navi2ch RET
+:
+
+install && .emacs
+: ;; navi2ch.el  (http://http://navi2ch.sourceforge.net/)
+: ;;              ./configure && make && make install
+: ;;(add-to-list 'load-path "/usr/local/share/emacs/site-lisp/")
+: (require 'navi2ch)
+: ;; レスを全て表示する
+: (setq navi2ch-article-exist-message-range '(1000 . 1)) ;;既存スレ
+: (setq navi2ch-article-new-message-range '(1000. 1)) ;;新スレ
+: ;; Boardモードのレス数欄にレスの増加数を表示する
+: (setq navi2ch-board-insert-subject-with-diff t)
+: ;; Boardモードのレス数欄にレスの未読数を表示する
+: (setq navi2ch-board-insert-subject-with-unread t)
+: ;; 板一覧のカテゴリをデフォルトで全て開いて表示する
+: ;;(setq navi2ch-list-init-open-category t)
+: ;; 板一覧のカテゴリをデフォルトで全て閉じて表示する
+: (setq navi2ch-list-close-all-category t)
+: ;; スレを expire(削除)しない
+: (setq navi2ch-board-expire-date nil)
+: ;; 履歴の行数を制限しない
+: (setq navi2ch-history-max-line nil)
+
+** customize-group
+
+: M-x customize-group
+:
+: M-x list-faces-display  フェイスのみをカスタマイズ
+
+** w3m
+.emacs
+: ;; w3m  
+: ;; $ cvs -d :pserver:anonymous@cvs.namazu.org:/storage/cvsroot login
+: ;; $ cvs -d :pserver:anonymous@cvs.namazu.org:/storage/cvsroot co emacs-w3m
+: ;; 
+: ;; $???? ./configure --with-emacs=/Applications/Emacs.app/Contents/MacOS/Emacs --with-lispdir=/Applications/Emacs.app/Contents/Resource/share/emacs/site-lisp/w3m --with-icondir=/Applications/Emacs.app/Contents/Resource/etc/w3m
+: ;; $ sudo ./configure  --with-lispdir=~/.emacs.d/elisp/w3m --with-icondir="/Applications/Carbon Emacs/Emacs.app/Contents/Resource/etc/w3m"
+: ;; $ make EMACS="/Applications/Carbon\ Emacs/Emacs.app/Contents/MacOS/Emacs"
+: ;; $ sudo make install EMACS="/Applications/Carbon\ Emacs/Emacs.app/Contents/MacOS/Emacs"
+: ;; $ sudo make install-icons EMACS="/Applications/Carbon\ Emacs/Emacs.app/Contents/MacOS/Emacs"
+: (add-to-list 'load-path "~/.emacs.d/elisp/w3m")
+: (require 'w3m-load)
+: (autoload 'w3m "w3m" "Interface for w3m on Emacs." t)
+: 
+** TODO evernote-mode
+
+: ; evernote-mode
+: ;;  http://code.google.com/p/emacs-evernote-mode/
+: (require 'evernote-mode)
+: (global-set-key "\C-cec" 'evernote-create-note)
+: (global-set-key "\C-ceo" 'evernote-open-note)
+: (global-set-key "\C-ces" 'evernote-search-notes)
+: (global-set-key "\C-ceS" 'evernote-do-saved-search)
+: (global-set-key "\C-cew" 'evernote-write-note)
+
+* Chapter09 外部プログラム
+
+** TODO シェルコマンドの実行 [9.3]
+   : M-!   (shell-command) シェルコマンドを実行
+: C-u M-!               結果をカレントバッファに挿入
+:
+: M-|   (shell-command-on-region) リージョンの内容を標準入力にして実行
+: C-u M-|                         結果をリージョンと置き換える
+:
+
+** TODO スクリプトの実行 [9.6]
+: M-x executable-interpret
+
+** diff [9.7]
+
+.emacs
+: unified diffにする
+: (setq diff-switches "-u")
+
+: C-c C-c で該当箇所にジャンプ
+
+* Chapter10 テキスト整形/テキスト処理
+
+** 行をソート [10.2]
+Emacsのコマンドでソートする方法と、sortコマンドを (C-u) M-| で実行する２つの方法がある。
+|----------------+-------------------------------+-----------------------|
+|                | Emacsコマンド                 | 外部コマンド(sort)    |
+|----------------+-------------------------------+-----------------------|
+| 辞書順         | M-x sort-lines                | sort                  |
+| 数値順         | M-x sort-numeric-fields       | sort -n               |
+| フィールド指定 | C-u {n} を基準                | -k{n,m} -t{separater} |
+| 降順           | ソート後に M-x reverse-region | -r                    |
+|----------------+-------------------------------+-----------------------|
+
+** 引用マーク [10.3]
+[Emacs標準の矩形処理] を参照
+
+** TODO boxes [10.4]
+M-| から boxesコマンドを使用
+
+http://boxes.thomasjensen.com/download.shtml
+boxesコマンドの設定
+: tar xzf boxes-1.1.src.tar.tar.gz
+: cd tar xzf boxes-1.1
+: make
+: sudo cp src/boxes /usr/local/bin
+: sudo cp boxes-config /usr/share/boxes
+
+boxes コマンドのオプション
+: -h       ヘルプ
+: -l       デザインのリスト
+: -d 名前   デザイン
+: -m       再描画
+: -r       装飾を削除する
+: -s 整数   横幅を指定する
+: -a l     文字列を左寄せする
+: -a c     文字列をセンタリングせする
+: -a r     文字列を右寄せする
+
+*** 日本語の扱い
+文字幅=バイト数でないと以下のようにずれる (UTF-8環境での例)
+: ###################
+: # あいうえお #
+: ###################
+
+EUC-JPで渡し、UTF-8に戻すことで対応できる
+: echo あいうえお | lv -Oe | boxes -d shell | lv -Ou8 | cat
+
+以下のようなシェルスクリプトを用意するとよい
+:(jboxes)
+: #!/bin/sh
+: lv -Oe | boxes "$@" | lv -Ou8 | cat
+** TODO 桁揃え [10.5]
+:リージョンに対し実行
+: M-x align
+: C-u M-x align   一部のルールは C-uを指定しないと動作しない
+:
+:リージョンを指定せず、境界線の間を整形範囲とする
+: (境界とは、空行,空白文字だけの行,{や}のみの行が該当する
+: M-x align-current
+:
+:揃える文字を指定
+: M-x align-regexp
+:
+:詳細に指定
+: C-u M-x align-regexp
+: 4つの質問に答える
+: Complex align using regexp: \(\s-*\)                 <桁揃えの正規表現  (例)[0-9.]+
+: Parenthesis group to modify (justify if negative): 1 <正規表現のどのカッコにマッチする部分を修正するか？
+: Amount of spacing (or column if negative): 1         <桁揃えで開けるスペースの数
+: Repeat throughout line? (y/n)                        <行の後ろの部分にわたって繰り返すか？
+* Chapter11 view-mode
+
+** view-mode [11.1~11.2]
+: C-x C-r    view-modeでファイルを開く
+: 
+: view-modeを有効/無効にする
+: M-x view-mode
+: あるいは
+: C-x C-q    (toggle-read-only)
+: 
+
+view-modeのキーバインド
+: SPC,BackSpace  1ページ分スクロール,1ページ分前スクロール
+: d,u            半ページ分スクロール,半ページ分前スクロール
+: <,>            バッファの先頭,末尾
+: RET,y          1行スクロール,1行前スクロール
+: .              マークする
+: x              ポイントとマークを入れ替える
+: {N}g           {N}行目へジャンプする
+: /,\            前方検索,後方検索
+: n,p            次検索,前検索
+: E              view-modeを抜ける
+: ?_h            ヘルプ
+: 
+
+** 他のページャ風のキーバインドの割り当て [11.3]
+
+.emacs
+: (require 'view)
+: ;; less like key bind
+: (define-key view-mode-map (kbd "j") 'View-scroll-line-forward)
+: (define-key view-mode-map (kbd "k") 'View-scroll-line-backward)
+: (define-key view-mode-map (kbd "f") 'View-scroll-page-forward)
+: (define-key view-mode-map (kbd "b") 'View-scroll-page-backward)
+: 
+
+* Chapter12 Emacs Lisp プログラミング支援
+〜省略
+* Chapter13 プログラミング/文書作成支援
+** 使い捨てのファイルを開く [13.1]
+open-junk-file.el
+
+インストール/.emacs
+: ;; open-junk-file.el (install-elisp-from-emacswiki "open-junk-file.el")
+: (require 'open-junk-file)
+: (setq open-junk-file-format "~/junk/%Y-%m-%d-%H%M%S.")
+: 
+
+** バッファのサマリを表示する [13.2]
+summarye.el
+
+プログラミング言語の場合は関数名のリストが表示、HTMLの場合は見出し(H1〜H6)の要素が表示
+
+インストール/.emacs
+: ;; summarye.el (install-elisp-from-emacswiki "summarye.el")
+: (require 'summarye)
+
+: M-x se/make-summary-buffer 　サマリを作成して表示
+: p,n                        　前後の項目に移動
+: b,SPC                      　前後にスクロール
+: g                          　サマリを更新
+: 
+
+** HTML/XMLの要素を隠す [13.4]
+: ;; summarye.el (install-elisp http://pop-club.hp.infoseek.co.jp/emacs/html-fold/html-fold.el)
+
+** ediff-files / ediff-buffers [13.5]
+: M-x ediff-files
+: M-x ediff-files3
+: M-x ediff-buffers
+: M-x ediff-buffers3
+
+: p,n 前後の変更点に移動
+: |    左右分割/上下分割表示を切り替え
+: a    AからBに取り込む  (A→B)
+: b    BからAに取り込む  (A←B)
+: ?    ヘルプの表示/非表示
+: q    ediffを終了
+
+: .emacs
+: ;; Ediff Control Panel用の専用のフレームを生成しない
+: (setq ediff-window-setup-function 'ediff-setup-windows-plan)
+
+** TODO ediff-merge-files [13.6]
+別のバッファでマージする
+: M-x ediff-merge-files
+
+** C言語のプリプロセッサを隠す [13.7]
+.emacs
+: (require 'hideif)
+: (add-hook 'c-mode-common-hook 'hide-ifdef-mode)
+
+: C-c @ C-d   (hide-ifdef-block)  ifdefブロックを隠す
+: C-c @ C-s   (show-ifdef-block)  ifdefブロックを展開する
+
+** ブロックを折り畳む [13.8]
+/〜未評価/
+
+** TODO imenu 関数定義にジャンプ (現在のファイル内) [13.9]
+バッファの目次を作成（プログラミングなら関数の一覧、HTMLなら見出し）
+: M-x imenu
+
+ミニバッファでどこに移動するか聞いてくる。
+指定するとその箇所にジャンプする。
+
+** TODO 現在の関数名をモードラインに表示 [13.10]
+: M-x which-func-mode
+
+(?) which-function-mode というのもあるが ...同じ?
+
+.emacs
+: (which-func-mode 1)
+: ;;全てのメジャーモードで which-func-mode を適用
+: (setq which-func-modes t)
+: ;;画面上部に表示する場合
+: ;(delete (assoc 'which-func-mode mode-line-format) mode-line-format)
+: ;(setq-default header-line-format '(which-func-mode ("" which-func-mode)))
+
+** リアルタイムにプログラミング言語の文法チェックを行う [13.11]
+: M-x flymake-mode
+/〜未評価/
+
+** TODO ファイルに直接書き込まずメモを取る (ipa.el) [13.12]
+
+: ipa-insert            　現在位置にメモを書く
+: ipa-edit              　カーソルより後にあるメモを編集
+: ipa-next/ipa-previous 　前後のメモにジャンプ
+: ipa-move              　メモを移動
+: ipa-show              　すべてのメモの一覧
+: ipa-toggle            　- hide/show annotations
+: ipa-jump              　- jump to any annotation with id completion
+
+キーバインド例
+: (global-set-key "\C-cii" 'ipa-insert)	;現在位置にメモを書く
+: (global-set-key "\C-cie" 'ipa-edit)		;カーソルより後にあるメモを編集
+: (global-set-key "\C-cin" 'ipa-next)		;前のメモにジャンプ
+: (global-set-key "\C-cip" 'ipa-previous) ;後のメモにジャンプ
+: (global-set-key "\C-cim" 'ipa-move)		;メモを移動
+: (global-set-key "\C-cil" 'ipa-show)		;すべてのメモの一覧
+: (global-set-key "\C-cit" 'ipa-toggle)	;hide/show annotations
+: (global-set-key "\C-cij" 'ipa-jump)		;jump to any annotation with id completion
+
+anythingでしおりをリストすることができる
+: M-x anything-ipa        　カレントバッファ
+: M-x anything-ipa-global 　全バッファ
+
+.emacs
+: ;; ipa.el (install-elisp-from-emacswiki "ipa.el")
+: (require 'ipa)
+
+** TODO ファイルのスナップショットを取る [13.13]
+ブランチを作ってやるより手軽。
+そのバッファを消すとスナップショットは失われるので注意。
+
+@@ 今、ファイルをコピーしてから手直ししているような作業に使えそう
+
+: M-x multiverse-store        　スナップショットを取る (スナップショット名を指定)
+: M-x multiverse-restore      　カレントバッファをスナップショットに変更する (スナップショット名を指定)
+: M-x multiverse-forget       　そのファイルの全スナップショットを削除
+: M-x multiverse-diff-current 　カレントバッファとスナップショットを比較
+: M-x multiverse-diff-other   　スナップショットどうしを比較
+
+.emacs
+: ;; multiverse.el (install-elisp-from-emacswiki "multiverse.el")
+: (require 'multiverse)
+: 
+
+** タグファイルを使って関数定義へ移動 (M-.) [13.14]
+
+*** タグファイルの作成
+Exuberant Ctags:
+http://ctags.sourceforge.net/
+
+: ctags -e ファイル名 ...   TAGSファイルを作成
+: ctags -e *              カレントディレクトリすべてを対象
+: ctags -e **/*           サブディレクトリも対象
+:
+: ctags --list-maps   拡張子と言語の一覧を表示
+
+*** 操作
+: M-. (find-tag)       　定義箇所にジャンプ
+: C-u M-.              　次の定義箇所にジャンプ
+: M-* (pop-tag-mark)   　ジャンプ元に戻る
+: M-x visit-tags-table 　他のタグファイルを指定
+: 
+
+** TODO GNU GLOBAL (gtags) [13.15]
+*** GNU GLOBAL
+ - C/C++, Yacc, Java, PHP4のみに対応
+ - 関数定義部分だけでなく参照箇所も検索可能
+ - grep機能を内蔵
+ - ソースコードのHTML化が可能
+**** インストール
+UNIX系であればパッケージシステムで導入
+(Mac) sudo port install global
+(Ubuntu) sudo apt-get install global
+
+gtags.elをコピー
+(Mac) /opt/local/var/macports/software/global/5.6.2_0/opt/local/share/gtags/gtags.el
+
+以下からダウンロードすることも可能
+http://www.tamacom.com/global-j.html
+
+.emacs
+:;; GNU Global
+:(require 'gtags)
+
+**** タグファイルの作成
+gtagsコマンドで作成
+GPATH, GRTAGS, GSYMS, GTAGSの４つのファイルができる
+
+**** Emacsからの使用(gtags.el)
+GNU GLOBALにgtags.elが同梱されている
+
+マイナーモードgtags-mode を有効にすると
+ctagsで用いる標準のキーバインドが置き換わる(M-. と M-*)
+: M-x gtags-mode 
+:
+: M-. (find-tag)       　定義箇所にジャンプ
+: C-u M-.              　次の定義箇所にジャンプ
+: M-* (pop-tag-mark)   　ジャンプ元に戻る
+
+: gtags-find-tag 関数の定義箇所にジャンプ
+: gtags-find-rtag 関数の参照元にジャンプ
+: gtags-find-symbol 変数の定義箇所にジャンプ
+: gtags-find-file ファイルにジャンプ
+: gtags-pop-stack 元のバッファに戻る
+: gtags-find-tag-from-here  カーソル位置により挙動を変えて検索する
+
+:   - 関数の呼び出し部分 → 関数定義へジャンプ
+:   - 関数の定義部分 → 関数の呼び出し箇所をリストアップ
+:
+: gtags-find-with-grep  ソースコード全体をgrepする
+
+
++ カスタマイズ
+: (setq gtags-path-style　'relative) ;ファイルパスを相対パスで表示
+: (setq view-read-only y) ;読み込み専用バッファを自動的にview-modeにする
+: (setq gtags-read-only y) ;上との組み合わせでタグジャンプ先を読み込み専用にする
+: (setq gtags-pop-delete t) ;M-*で戻ったとき、戻る前のバッファを削除する
+
+* Chapter14 org-mode
+  http://orgmode.org/
+** インストール
+http://orgmode.org/ からダウンロード
+:  $ unzip org-6.34c.zip
+:  $ cd org-6.34c
+:  $ make
+:  $ sudo make install
+
+ *MacのCarbon Emacsでは、/usr/local/share/emacs/site-lisp/ にインストールされるが
+　デフォルトの/Applications/Carbon Emacs/Emacs.app/Contents/Resources/lisp/textmodes/ のものが
+  有効になってしまうのでこちらのorg*.el|elcを削除した
+
+.emacs
+: ;; 拡張子がorgのファイルを開いた時，自動的にorg-modeにする
+: (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
+: ;; org-modeでの強調表示を可能にする
+: (add-hook 'org-mode-hook 'turn-on-font-lock)
+: (define-key global-map "\C-cl" 'org-store-link)
+: ;; 見出しの余分な*を消す
+: ;; (setq org-hide-leading-stars t)
+: ;; org-default-notes-fileのディレクトリ
+: (setq org-directory "~/org/")
+: ;; org-default-notes-fileのファイル名
+: (setq org-default-notes-file "notes.org")
+
+** 書式/操作
+*** 見出し
+ 「*」　(後ろにスペースが必要) 
+: * a
+: ** bb
+
+**** 見出しの作成
+:[14.1]
+:
+: M-RET   同じレベルの見出しを作成
+: <M-left>, <M-right>  見出しの階層を増減する
+: <M-up>, <M-down>     行/見出しを入れ替える
+
+**** 見出しの展開/折り畳み
+: TAB       (org-cycle) 見出し以下の文章の展開〜隠す
+: C-u TAB   グローバルサイクル
+: S-TAB      〃
+: C-c C-x b  現在のサブツリーを別バッファに表示
+: 
+**** 見出し間の移動
+: C-c C-n    次の見出しへ
+: C-c C-p    前の見出しへ
+: C-c C-f    次の同一階層の見出しへ
+: C-c C-b    前の同一階層の見出しへ
+: C-c C-u    一つ上の階層の見出しへ
+: C-c C-j    (org-goto)
+
+*** リスト
+#+BEGIN_EXAMPLE
+ リスト  - か +
+ + aaaaaaaaa
+   - aaaaaa
+   - bbbbb
+   - ccc
+
+ 順序付きリスト  数字. か 数字)
+ 1. aaaaaaaa
+  1) bbbbbbbbb
+  1) cccccccccccc
+
+ 項目リスト  名前と内容のあいだを ::　で区切る
+  aaaaaa :: bbbbbb
+  ccccc :: ddddd
+#+END_EXAMPLE
+
+*** 段落と改行
+: 空行で段落
+: \\ で改行
+
+#+BEGIN_EXAMPLE
+ aaaa \\ 
+ BBB<ここはつながる>
+ bbbb \\ 
+ cccc
+
+ dddd
+#+END_EXAMPLE
+  ↓
+
+ aaaa \\ 
+ BBB<ここはつながる>
+ bbbb \\ 
+ cccc
+
+ dddd
+
+*** 装飾 [14.10]
+: *ボールド*
+: /イタリック/
+: _アンダーライン_
+: =コード=
+: +取り消し+
+: ^上付き  ^{ここだけ上付き}にする
+: _下付き  _{ここだけ下付き}にする
+  ↓
+ *ボールド* /イタリック/ _アンダーライン_ =WWWWWiiiiWWW= +取り消し+
+ ^上付き ^{ここだけ上付き}にする
+ _下付き _{ここだけ下付き}にする
+
+*** 水平線
+ 5文字以上の連続する - を記述する
+:-----
+ ↓
+-----
+
+*** センタリング
+: #+BEGIN_CENTER 〜 #+END_CENTER で囲む
+#+BEGIN_CENTER 〜
+タイトルはセンタリング 
+#+END_CENTER
+
+** そのまま出力 [14.11]
+: 行頭を : で始める
+: あるいは
+: #+BEGIN_EXAMPLE 〜 #+END_EXAMPLE で囲む
+
+** 別のファイルの取り込み (#+INCLUDE) [14.13]
+:#+INCLUDE: "ファイル名" src メジャーモード
+:#+INCLUDE: "ファイル名" quote      別のorgファイルを引用
+:#+INCLUDE: "ファイル名" example    例示としてファイルの内容を取り込む
+
+** 表 [14.5]
+: org-table-create  表を作成
+: C-c |  リージョンを表に変換
+:
+: |   カラムを作成
+: TAB  右端のカラムか行末の場合、整形され次の行を作成して移動
+: |- TAB     横線を入力
+: C-c -
+: M-矢印キー  行/列を入れ替える  
+: M-S-<left>  行を切り取る
+: M-S-<right> 行を左側に挿入
+:
+: C-c |  リージョンを表に変換する
+: C-^    ソート
+: C-`    カラムを別バッファで編集
+:
+: <数値>  列の表示幅を指定
+
+*** orgtbl マイナーモード
+他のメジャーモードでテーブル機能が利用可能
+: M-x orgtbl-mode
+
+.emacs  デフォルトで有効にする場合(以下はmail-modeで有効にする設定)
+: (add-hook 'mail-mode-hook 'turn-on-orgtbl)
+
+*** 表計算
+C-c +   リージョン内の合計を計算（キルリングに保存）
+C-}     (A1形式で)行/列を表示/非表示  (org-table-toggle-coordinate-overlays)
+C-c =       行に対する計算式を入力
+C-u C-c =   列に対する計算式を入力
+  表の下に　
+   #+TBLFM: $6=vsum($2..$5)
+  のように表示される
+
+計算式
+$2..$4  2〜4列目
+B&..D&   
+
+TBLFM の行で C-c C-c 全行に計算式を適用
+
+関数
+| 関数名        | 値                        |
+|---------------+---------------------------|
+| count(範囲)   | データの個数             |
+| vsum(範囲)    | データの総和             |
+| vprod(範囲)   | データの総積             |
+| vmax(範囲)    | データの最大値           |
+| vmin(範囲)    | データの最小値           |
+| vmean(範囲)   | データの(算術)平均       |
+| vgmean(範囲)  | データの幾何平均         |
+| vhmean(範囲)  | データの調和平均         |
+| vsdev(範囲)   | データの標準偏差(N-1)    |
+| vpsdev(範囲)  | データの標準偏差(N)      |
+| vvar(範囲)    | データの分散             |
+| vmedian(範囲) | データのメジアン(中央値) |
+
+
+
+*** (不明なこと)
+ - "|"文字を表の中に記述するには？
+ - HTML形式にエクスポートしたときに罫線を描画するには？
+
+:   | Name | Value         |
+:   |------+---------------|
+:   | aaa  | aaaaaaaaaaaaa |
+:   | bbb  | bbbbbbbb      |
+
+    ↓
+
+   | Name | Value         |
+   |------+---------------|
+   | aaa  | aaaaaaaaaaaaa |
+   | bbb  | bbbbbbbb      |
+
+** ハイパーリンク [14.9]
+記述方法
+: [[リンク先]]
+: [[リンク先][表示文字列]]
+
+: C-c C-o  ハイパーリンクを内部
+
+*** 開くリンク
+リンクに文字列を指定すると最初に一致した部分へのリンクになる
+: [[org-mode]]
+リンクを指定する文字列の先頭に*をつけると見出しに限定する
+: [[*org]]
+
+*** ラジオターゲット
+
+HTMLに変換したときにターゲット文字列がそのまま表示されてしまうため以下のようにする。
+
+コメントで以下のように記述し、C-c C-c を入力
+:#<<<ハイパーリンク>>>
+ハイパーリンク
+
+*** リンクの挿入
+(http://d.hatena.ne.jp/tamura70/20100209/org)
+: C-c l   org-store-link   リンク先で実行し、リンク場所を保存する (キーバインドは予め設定が必要)
+: C-c C-l org-insert-link
+
+** メモを取る org-remember [14.4]
+.emacs
+: ;; org-remember
+: (require 'org-install)
+: (org-remember-insinuate)
+: (setq org-remember-templates
+:   '(("Note" ?n "* %?\n  %i\n  %a" nil "Tasks")
+: 	("Todo" ?t "* TODO %?\n  %i\n  %a" nil "Tasks")))
+: ;; org-default-notes-fileのディレクトリ
+: (setq org-directory "~/Documents/memo/")
+: ;; org-default-notes-fileのファイル名
+: (setq org-default-notes-file "notes.org")
+: (global-set-key (kbd "C-c r") 'org-remember)    ;;任意
+
+: M-x org-remember    (リージョンを選択していた場合メモに含まれる)
+:  種別を選択 (.emacsで設定されているテンプレート)
+:  編集
+: C-c C-c で終了   org-remember-finalize
+: C-c C-k で中止   org-remember-kill
+
+** チェックリスト [14.12]
+ 見出しの端に [/] という文字列を付け、リスト項目の先頭を [ ] とする。\\
+ チェックリストをチェック/解除するには各行で C-c C-c とする
+: + [/]
+:  - [ ] Investigate aaa
+:  - [ ] Repare bbbb
+:  - [ ] Check ccccc
+:  - [ ] Submit dddddd
+  ↓
+:+ [4/4]
+: - [X] Investigate aaa
+: - [X] Repare bbbb
+: - [X] Check ccccc
+: - [X] Submit dddddd
+
+** =TODO=リスト [14.6]
+: C-c C-t   (org-todo) 見出しに "TODO" → "DONE" とマークを付ける 
+
+TODO のキーワードは org-todo-keywords変数で設定する
+デフォルトは、"TODO", "DONE"
+:(require 'org)
+:(setq org-use-fast-todo-selection t)
+:(setq org-todo-keywords
+:      '((sequence "TODO(t)" "STARTED(s)" "WAITING(w)" "|" "DONE(x)" "CANCEL(c)")
+:        (sequence "APPT(a)" "|" "DONE(x)" "CANCEL(c)")))
+
+** org-schedule [14.7]
+: C-c C-s org-schedule
+: C-c C-d org-deadline
+ - C-u を先頭に指定するとスケジュールを消去する
+ - 日時の指定
+   - カレンダー内は、Shirt+カーソルキーで移動
+   - 「時:分」を付け加えることも可能
+
+タイムスタンプを入力する
+: C-c .      org-time-stamp
+: C-u C-c .  現在日時を入力
+: C-!        org-time-stamp-inactive  タイムスタンプを入力、予定表には載せない
+
+*** 計時
+(http://d.hatena.ne.jp/tamura70/20100221/org)
+
+: C-c C-x C-i(TAB)     org-clock-in
+: C-c C-x C-o          org-clock-out
+:
+: C-c C-x C-x          org-clock-cancel
+: C-c C-x C-d          org-clock-display
+: C-c C-x C-j          org-clock-goto
+
+@@@@@@@@@
+
+** タグ [14.8]
+見出しにタグを付ける。
+: C-c C-q   org-set-tags-command   タグを付ける (org-version=5.23a には無い)
+: C-c C-c                          見出し行にカーソルがある場合、タグを付ける
+
+ - タグに使用可能な文字 : 英数字, _, @
+ - タグは右端に「:」で囲まれて表示される
+ - 複数のタグを指定するときは「:」で区切る
+
+*** タグを検索
+: C-c / T   org-sparse-trees T     タグを検索
+C-c C-c でハイライトを消せる
+
+** TODO org-agenda [14.14]
+
+.emacs
+: (global-set-key (kbd "C-c a") 'org-agenda)
+: (setq test-file-for-org "~/tmp/org-test")
+: ;;(setq org-agenda-files (list test-file-for-org))
+: (setq org-agenda-files (list org-directory))
+
+: 時間の表示幅
+: (setq org-agenda-time-grid
+:   '((daily today require-timed)
+:     "----------------"
+:     (900 1000 1100 1200 1300 1400 1500 1600 1700)))
+
+Agendaの種別
+: C-a a   カレンダー形式 
+: C-a t   TODO
+: C-a m   タグ
+: 
+
+
+*** Agendaでの操作 (C-a a)
+:  f, b        次の週, 前の週
+:  vd, vw, vm  日,週,月単位に表示を切り替え
+:  vl, vL      ログ
+:  vf          follow mode 連動して本のメモを表示
+:  vR          時間を集計した表を表示
+:  ve          エントリされているテキストを表示
+:
+:  r           再読込
+:　C-c C-x C-c 列表示
+:
+:  C-c C-t     TODOを設定
+:  C-↑, C-↓   優先度を変更
+:  C-c C-s     予定日を設定
+:  C-c C-d     締切日を設定
+:  C-c C-q     タグを付ける
+:  C-c C-z     ノートを書く
+: 
+:  C-k         予定の削除
+: 
+:  SPC, RET    元のorgファイルを表示, 移動
+:  s           元のorgファイルを保存
+: 
+:  計時中はモードラインに現在のタスクと経過時間を表示
+:  I  org-agenda-clock-in  計時を開始
+:  O  org-agenda-clock-out 計時を終了
+:
+:  q 終了 
+
+** エクスポート [14.15]
+: C-c C-e   (org-export) エクスポート形式選択
+
+org-export-* で調べられる。Ascii, HTML, xoxo(?), iCalendar形式でエクスポート可能
+: org-export-as-html
+: org-export-as-html-and-open
+: org-export-as-html-to-buffer
+: org-export-as-latex
+: org-export-as-latex-to-buffer
+: org-export-as-xoxo
+: org-export-icalendar-all-agenda-files
+: org-export-icalendar-combine-agenda-files
+: org-export-icalendar-this-file
+: org-export-region-as-html
+: org-export-region-as-latex
+: org-export-visible
+
+- テンプレートを挿入
+:org-insert-export-options-template
+: C-c C-e (org-export) からも指定可能
+
+: #+TITLE:     Emacs_technic_book.org
+: #+AUTHOR:    Takuya Sakakibara
+: #+EMAIL:     takuya@Macintosh-7.local
+: #+LANGUAGE:  en
+: #+TEXT:      Some descriptive text to be emitted.  Several lines OK.
+: #+OPTIONS:   H:3 num:t toc:t \n:nil @:t ::t |:t ^:t -:t f:t *:t TeX:t LaTeX:nil skip:t d:nil tags:not-in-toc
+
+** その他参考資料
+「Emacs org-modeを使ってみる」 http://d.hatena.ne.jp/tamura70/searchdiary?word=[org-mode]
+
+
+* リンク
+http://hpcgi1.nifty.com/spen/index.cgi?OrgMode/Manual
+http://d.hatena.ne.jp/tamura70/20100220/org
+
+----------
+
+ʅ（ ◜◡'）ʅ(◞‸◟)ʃ（'◡◝ ）ʃ
+
+
+
