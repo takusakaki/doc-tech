@@ -1101,6 +1101,8 @@ http://orgmode.org/ からダウンロード
  ^上付き ^{ここだけ上付き}にする
  _下付き _{ここだけ下付き}にする
 
+Export時に、下付きを無効にする場合は 出力オプション("#+OPTION) で ^:nil とする
+
 *** 水平線
  5文字以上の連続する - を記述する
 :-----
@@ -1114,9 +1116,23 @@ http://orgmode.org/ からダウンロード
 #+END_CENTER
 
 ** そのまま出力 [14.11]
-: 行頭を : で始める
-: あるいは
-: #+BEGIN_EXAMPLE 〜 #+END_EXAMPLE で囲む
+行頭を : で始める
+あるいは
+:#+BEGIN_EXAMPLE
+:  :
+:#+END_EXAMPLE
+で囲む
+
+<org.pdf - Chapter11>
+ソースコードの場合 (Emacs のfont-lockで装飾可能なもの)
+:#+BEGIN_SRC <language> [-n] [+n]
+:  :
+:#+END_SRC
+ - <language>    メジャーモードの名称 (e.g. emacs-lisp, perl, ..)
+ - [-n], [+n]    行番号を付ける。 +n ではその前の行番号を引き継ぐ
+
+
+
 
 ** 別のファイルの取り込み (#+INCLUDE) [14.13]
 :#+INCLUDE: "ファイル名" src メジャーモード
@@ -1242,6 +1258,9 @@ HTMLに変換したときにターゲット文字列がそのまま表示され�
 :  編集
 : C-c C-c で終了   org-remember-finalize
 : C-c C-k で中止   org-remember-kill
+
+ ※ org-remember-templatesの説明
+ 　http://hpcgi1.nifty.com/spen/?OrgMode%2FOrgMode6.26dManual%2F9_Capture_-_Refile_-_Archive#i3
 
 ** チェックリスト [14.12]
  見出しの端に [/] という文字列を付け、リスト項目の先頭を [ ] とする。\\
@@ -1385,9 +1404,83 @@ org-export-* で調べられる。Ascii, HTML, xoxo(?), iCalendar形式でエク
 : #+TEXT:      Some descriptive text to be emitted.  Several lines OK.
 : #+OPTIONS:   H:3 num:t toc:t \n:nil @:t ::t |:t ^:t -:t f:t *:t TeX:t LaTeX:nil skip:t d:nil tags:not-in-toc
 
+- 出力オプション(#+OPTION)
+| H         | どのレベルまでを見出しとするか                       | 1〜       |
+| num       | 見出しに番号をつけるか                               | nil/t     |
+| toc       | 目次を出力するかどうか、どのレベルまで目次に載せるか | nil/t/1〜 |
+| ^         | '_' を下付き文字列の開始記号とするかどうか           | nil/t/{}  |
+| author    | 著作情報を出力するかどうか                           | nil/t     |
+| creator   | 出力ツール(Emacs, Org-mode)情報を出力するかどうか    | nil/t     |
+| timestamp | タイムスタンプを出力するかどうか                     | nil/t     |
+
+
+
+
+** ドローワ
+ #+DRAWERS: PROPERTIES CLOCK LOGBOOK FEEDSTATUS MEMO
+     :
+     :
+
+   :MEMO:
+   この中の記述は，表示されない．
+   :END:
+
+** アーカイブ
+ | C-c C-x C-s または C-$ | 　　　　アーカイブファイルに移動する　（<元ファイル名>_archive) |
+ | C-c C-x a              | ARCHIVEタグを付ける/外す                                        |
+ | C-c C-x A              | "Archive"子見出しに移動する                                     |
+ | C-TAB                  | ARCHIVEタグの付いた見出しを開く                                 |
+
+** エクスポートのオプション
+http://d.hatena.ne.jp/tamura70/20100304/org
+
+*** HTMLエクスポートのキーワード
+ | キーワード                  | 説明                               |
+ |-----------------------------+------------------------------------|
+ | #+HTML:                     | HTML記法の行                       |
+ | #+BEGIN_HTML ... #+END_HTML | HTML記法のブロック                 |
+ | #+ATTR_HTML:                | 表，イメージ，リンク等に対する設定 |
+ | #+STYLE:                    | スタイルファイルの指定             |
+
+** HTML表のスタイル設定
+  http://d.hatena.ne.jp/tamura70/20100307/org
+ 
 ** その他参考資料
 「Emacs org-modeを使ってみる」 http://d.hatena.ne.jp/tamura70/searchdiary?word=[org-mode]
+*** org-mode 7.4のインストール
+Windows環境ではcygwinを導入(makeをインストール)
+.....\org-*.elを削除
+http://orgmode.org/  からダウンロード
+解凍し、Makeファイルを書き換え
+  EMACS=/cygdrive/c/meadow/bin/Meadow.exe  <<<< Meadow
+  lispdir = /cygdrive/c/meadow/site-lisp/org-6.35i
+make 
+make install
 
+
+* その他
+** プロキシ
+.emacs
+: (setq url-proxy-services '(("http" . "proxy.server.com:8080"))) 
+認証が必要な環境ではネットワークアクセス時に問い合わせがくる
+
+** Meadow
+*** 自動読み込み
+<Meadow>/packages/pkginfo/*/auto-autoloads.el 
+が自動的に読み込まれる模様
+
+*** Meadowで、org-remember で C-c C-c でメモを登録しようとするとエラーになる
+エラーメッセージ
+: org-end-of-subtree: Invalid regexp: "Invalid content of \\{\\}"
+howmが(自動的に)有効になっているのが理由らしい
+
+<Meadow>/packages/pkginfo/howm/auto-autoloads.el 
+の冒頭にある以下の設定を nilにする
+(defcustom meadow-use-howm t
+   :
+   :
+
+参考：http://d.hatena.ne.jp/fu7mu4/20091203/1260017861
 
 * リンク
 http://hpcgi1.nifty.com/spen/index.cgi?OrgMode/Manual
