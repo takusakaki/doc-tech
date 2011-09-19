@@ -1,4 +1,4 @@
-#+TITLE:     Lerning_Perl.txt
+#+TITLE:     Lerning Perl
 #+LANGUAGE:  jp
 #+TEXT
 
