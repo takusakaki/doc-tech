@@ -11,8 +11,8 @@
 git add .   ワークツリーの全てのファイルを追加("インデックスにステージする"という)
 git add -u  ワークツリー内で版管理している全てのファイルを追加
 git add -a  版管理している全てのファイルを追加してコミット (add -u + commit)
-git add -p  追加箇所を選別 (コミット内容を選別)
 git add -A  版管理していないファイルを含めた全てのファイルを追加（.gitignoreで無視しているファイルは除く）
+git add -p  追加箇所を選別 (コミット内容を選別)
 ** git commit
 git commit -m "<comment>"  コメントを指定してコミット
 git commit -v ログ入力時に変更内容を表示
@@ -25,7 +25,7 @@ git reset --hard HEAD^   最後のコミットオブジェクトを削除し、�
 ** git diff
 git diff        変更点を確認（インデックス<-->ワークツリー）
 git diff HEAD   変更点を確認（HEAD<-->ワークツリー）
-git diff --cached [コミットオブジェクト(省略時はHEAD)] インデックスからの変更点を確認
+git diff --cached [コミットオブジェクト(省略時はHEAD)] インデックスからの変更点を確認 (HEAD<-->インデックス)
 
   HEAD <-- インデックス <-- ワークツリー
 
@@ -46,7 +46,7 @@ git diff --cached [コミットオブジェクト(省略時はHEAD)] インデ�
 
 ** git log
 git log      ログを参照
-git log -p   変更内容と共に表示
+git log -p   変更内容(パッチ)と共に表示
 git log -<n> 表示数を制限
 git log --pretty=<format>  フォーマットを指定
          <format> oneline, shoft , medium(default), full, fuller, email, raw
@@ -55,6 +55,15 @@ git log --grep=<pattern>   ログメッセージで検索
                            (複数指定)
                              OR検索　--grep=aa --grep=bb
                             AND検索  -all-match --grep=aa --grep=bb
+その他
+ --stat           各コミットで変更されたファイルの統計情報を表示する
+ --shortstat      --stat コマンドのうち、変更/追加/削除 の行だけを表示する
+ --name-only      コミット情報の後に変更されたファイルの一覧を表示する
+ --name-status    変更されたファイルと 追加/修正/削除 情報を表示する
+ --abbrev-commit  SHA-1 チェックサムの全体 (40文字) ではなく最初の数文字のみ を表示する
+ --relative-date  完全な日付フォーマットではなく、相対フォーマット (“2 weeks ago”など) で日付を表示する
+ --graph          ブランチやマージの歴史を、ログ出力とともにアスキーグラフで 表示する
+
 
 ** git show
 git show     最新のコミット内容を表示  (=  git log -1 -p) 
@@ -66,6 +75,134 @@ git revert <コミット>   コミットを取り消す
 ** git checkout
 git checkout <path>       ワークツリーの変更を取り消す (インデックスの状態に戻す)
 git checkout HEAD <path>  ワークツリーの変更を取り消す (HEADの状態に戻す)
+
+** git rm
+git rm <file>           ファイルを削除 (ファイルの削除をステージする、この後 git-commit)
+git rm --cached <file>  ファイル自体は作業ツリーに残しつつステージングエリアから削除する
+                        (間違ってgitに登録してしまい、その登録を解除したいが、ファイル自体は消さずに残したい場合)
+
+** git mv
+git mv <file_from> <file_to>  ファイルを移動/名前変更
+
+上記は以下と同じ処理になる
+: mv <file_from> <file_to>
+: git rm <file_from>
+: git add <file_to>
+
+
+** git remote
+git remote add  <リモート名> <リポジトリ>  リモートリポジトリを追加
+git remote                              リモート名の一覧を表示
+git remote -v                           リモート名の一覧にURLを付加して表示
+git remote show <リモート名>              リモートの詳細を表示
+
+git remote rename <リモート名(変更前)> <リモート名(変更後)>  リモート名を変更
+git remote rm <リモート名>                リモートを削除
+
+
+
+ 'origin' はgit-cloneしたときに、クローン元のサーバに対してデフォルトでつけられれる名前
+** git fetch
+git fetch <リモート名>   リモートリポジトリからデータを取得
+
+ git-fetch ではデータをローカルリポジトリに引き出すだけで、ローカル環境にマージすることはない
+ 
+
+** git clone
+git clone コマンドは
+
+** git push
+git push <remote-name> <branch>
+git push <remote-name> <local-branch>:<remote-branch> ローカルブランチとリモートブランチの名前を変える場合
+git push <remote-name> :<branch>     リモートブランチの削除
+
+** git tag
+git tag タグの一覧を表示
+git tag -l '<パターン>' パターンを指定してタグを検索
+
+*** タグの作成
+Git のタグには、軽量 (lightweight) 版と注釈付き (annotated) 版の二通りがあります。
+ 注釈付きのタグは、Git データベース内に完全なオブジェクトとして格納されます。
+ チェックサムが付き、タグを作成した人の名前・メールアドレス・作成日時・タグ付け時のメッセージなども含まれます。
+ また、署名をつけて GNU Privacy Guard (GPG) で検証することもできます。
+
+- 注釈付きタグの作成
+ git tag -a <タグ名> [-m '<メッセージ>'] [リビジョン]    注釈付きのタグの作成
+ git tag -s <タグ名> [-m '<メッセージ>'] [リビジョン]    署名付きのタグの作成
+
+- 軽量版タグの作成
+ git tag    <タグ名> [リビジョン]
+
+
+*** タグの共有
+デフォルトではgit push ではタグ情報はリモートに送られない。
+
+git push <リモート名> <タグ名>  指定したタグを送信する
+git push <リモート名> --tags   リモートサーバに存在しないタグ全てを送信する
+
+
+** git branch
+git branch  [-v]          ブランチ一覧を表示 [直近のコミット情報を付加]
+git branch  --merged      マージ済みのブランチを表示 (git v1.5.6以降)
+git branch  --no-merged   マージされていないブランチを表示
+git branch -d <ブランチ>   ブランチを削除 (-D で強制)
+
+** git merge
+git merge <マージ元ブランチ>     マージ（マージ先のブランチで実行）
+
+*** コンフリクト発生時
+ git status  ----> 'unmerged:' と表示される
+ コンフリクトを解消したらgit-addする (ファイルをステージすると、Gitはコンフリクトが解消したとみなす)
+
+ git mergetool    コンフリクト解決のツールを起動する
+
+ "git branch --merged"  で マージ済みのブランチが確認できる
+ '*'のついていないブランチは当該ブランチにマージ済みなので削除してもよい
+
+** git rebase
+get rebase <branch>   リベース
+
+注意点：公開リポジトリにプッシュしたコミットをリベースしてはいけない
+       http://progit.org/book/ja/ch3-6.html  
+
+*** 例
+ (例1)
+            C3  <----[experiment]
+           /
+   C0_C1_C2_C4  <----[master]
+
+   : $ git checkout experiment
+   : $ git rebase master
+
+           +C3+ [experiment]
+           /    ↓
+   C0_C1_C2_C4_C3'
+            ↑
+            [master]
+
+   このあと、masterにcheckoutして merge experimentとすれば Fast forwardとなる
+
+
+ (例2)
+   C1_C2_C5_C6  <----[master]
+        \
+         C3_C4_C10   <------[server]
+          \
+           C8_C9  <----[client]
+
+   : $ git rebase --onto master server client
+   client ブランチに移動して client ブランチと server ブランチの共通の先祖からのパッチを取得し、master 上でそれを適用しろという意味になる
+
+　          [master] [client]
+            ↓       ↓
+   C1_C2_C5_C6_C8'_C9'
+        \
+         C3_C4_C10   <------[server]
+          \
+          +C8_C9+
+
+
+
 
 * UseCase
 ** 変更の一部分をコミットする
