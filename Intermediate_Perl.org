@@ -1,8 +1,8 @@
-#+TITLE:     Intermediate_Perl.org
+#+TITLE:     Intermediate Perl
 #+DESCRIPTION: 
 #+KEYWORDS: 
 #+LANGUAGE:  jp
-#+OPTIONS:   H:3 num:t toc:t \n:nil @:t ::t |:t ^:t -:t f:t *:t <:t
+#+OPTIONS:   H:3 num:nil toc:t \n:nil @:t ::t |:t ^:nil -:t f:t *:t <:t
 #+OPTIONS:   TeX:t LaTeX:t skip:nil d:nil todo:t pri:nil tags:not-in-toc
 #+INFOJS_OPT: view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
 #+EXPORT_SELECT_TAGS: export
@@ -15,22 +15,22 @@
 ---------------------------------------------------------
 * 7. サブルーチンへのリファレンス
 ** 7.1 
-my $coderef = \&aaaaa;
-
+: my $coderef = \&aaaaa;
+ 
 デリファレンス
-&{$coderef}(....);
-&$coderef(....);
-$coderef->(....);
+: &{$coderef}(....);
+: &$coderef(....);
+: $coderef->(....);
 
 ** 7.2 無名サブルーチン
-my $coderef = sub {.......};
+: my $coderef = sub {.......};
   ** subの頭に'\' を付けていないことに注意
 
 ** 7.4 クロージャ
 スコープ(サブルーチン)の外に出たレキシカル変数を参照するサブルーチン
 
 ---------------------------------------------------------
-* 8.
+* 8. ファイルハンドルへのリファレンス
 
 ** 8.4
 IO:Handleパッケージは入出力全般の基底クラス。
@@ -44,31 +44,30 @@ IO:Handleパッケージは入出力全般の基底クラス。
 
  ** <=> スペースシップ演算子
  ** 以下と等価
-  sort {
-    if    ($a < $b) {-1}
-    elsif ($a > $b) {+1}
-    else            { 0}
-  } 配列
+:   sort {
+:     if    ($a < $b) {-1}
+:     elsif ($a > $b) {+1}
+:     else            { 0}
+:   } 配列
 
 ** 9.4 シュワルツ変換
- my @output_data = 
-   map $_->[0],
-   sort { $a->[1] <=> $b->[1]}
-   map [ $_, calc_something($_) ],
-   @input_data;
+:  my @output_data = 
+:    map $_->[0],
+:    sort { $a->[1] <=> $b->[1]}
+:    map [ $_, calc_something($_) ],
+:    @input_data;
 
-  ソートの材料とする値を最初のmapで作成し
-  sortでその値でソートし
-  次のmapで元の値を取り出す
+  最初のmapでは、ソートの基準とする値(a)を算出し、元の値(b)とセットにした配列を作成、
+  sortで(a)の値でソートし
+  次のmapで元の値(b)を取り出す
 
 ---------------------------------------------------------
 * 10. 大規模なプログラムの構築
-
 ** 10.2
   ファイルの内容を１つのスカラー変数に入れる
-   undef $/;
-   $buf = <$fh>;
-    ** undef $/;としない場合
+:    undef $/;
+:    $buf = <$fh>;
+      ** undef $/;としない場合
        $buf = join '', <$fh>;  と同じ
 
 ** 10.3 do
@@ -87,32 +86,32 @@ IO:Handleパッケージは入出力全般の基底クラス。
 
 ** 11.3
   "Class->" で呼びだすと、第1引数はクラス名になる
-  Class->method(@args);
-  Class::method('Class', @args);
+:   Class->method(@args);
+:   Class::method('Class', @args);
 
   ** "$インスタンス変数->"で呼び出した場合は、
      第1引数はインスタンスになる (-->12.8)
 
 ** 11.5
  継承の記述
-  @Cow::ISA = qw(Animal); パッケージ名によりstrictの警告を抑止
-  ----
-  package Cow;
-  use vars qw(@ISA);
-  @ISA = qw(Animal);
-  ----
-  package Cow;
-  use Animal;
-  use vars qw(@ISA);
-  @ISA = qw(Animal);
-  ----
-  package Cow;
-  use base qw(Animal);  <<<<<<
-
+:   @Cow::ISA = qw(Animal); パッケージ名によりstrictの警告を抑止
+:   ----
+:   package Cow;
+:   use vars qw(@ISA);
+:   @ISA = qw(Animal);
+:   ----
+:   package Cow;
+:   use Animal;
+:   use vars qw(@ISA);
+:   @ISA = qw(Animal);
+:   ----
+:   package Cow;
+:   use base qw(Animal);  <<<<<<
+: 
 ** 11.8 SUPER
- sub speak {
-   my $class = shift;
-   $class->SUPER::speak;  <<<<
+:  sub speak {
+:    my $class = shift;
+:    $class->SUPER::speak;  <<<<
 
 
 
@@ -120,13 +119,13 @@ IO:Handleパッケージは入出力全般の基底クラス。
 * 12. データのあるオブジェクト
 
 ** 12.1 インスタンス変数
-  bless $tv_horse, 'Horse';
+:  bless $tv_horse, 'Horse';
 
  blessはリファレンスの先の変数をHorseオブジェクトとする
  オブジェクトとは「ブレスされたリファレンス」である
 
 ** 12.2 インスタンスメソッド
- $tv_horse->method();
+:  $tv_horse->method();
 
  第1引数はインスタンスになる (-->11.3)
 
@@ -145,21 +144,21 @@ IO:Handleパッケージは入出力全般の基底クラス。
  wantarray関数
   戻り値としてリストが要求されている場合は真を返し
   スカラーが要求されている場合は偽を返す
-  e.g.)
-   sub aaaaa {
-     wantarray ? qw(a b c) : "a,b,c";
-   }
+:   e.g.)
+:    sub aaaaa {
+:      wantarray ? qw(a b c) : "a,b,c";
+:    }
 
 ** 12.12 getter/setterの簡略的な記法
- sub color     { $_[0]->{color} }
- sub set_color { $_[0]->{color} = $_[1] }
-
+:  sub color     { $_[0]->{color} }
+:  sub set_color { $_[0]->{color} = $_[1] }
+: 
 ** 12.14
  Carp::croak
  メソッドを呼び出したところから届いたように
  エラーメッセージを表示する  dieと同等
-  die  <---> croak
-  warn <---> carp
+:   die  <---> croak
+:   warn <---> carp
 
 ---------------------------------------------------------
 * 13. オブジェクトのデストラクション
@@ -168,22 +167,22 @@ IO:Handleパッケージは入出力全般の基底クラス。
  リファレンスが無くなると、DESTROYメソッドが呼び出される
 
 ** 13.2
- sub add { push @{+shift}, shift}
+:  sub add { push @{+shift}, shift}
                   ~~~
  Perlでは単項の+(項の先頭のプラス記号)は何もしないものと定義
  されている。ここでは @{"shift"}と解釈されるのを防ぐ 
 
 ** 13.3
  複数のインスタンスの取り扱い例
-  @horses = map Horse->new($_), qw(aaaa bbbb cccc);
-  $_->eat() for @horses;
- -----
+:   @horses = map Horse->new($_), qw(aaaa bbbb cccc);
+:   $_->eat() for @horses;
+:  -----
  デストラクタには $self->SUPER::DESTROY を入れておくべき
 
 ** 13.7
  弱いリファレンス
-  use Scalar::Util qw(weaken);
-  weaken($xxxx);
+:   use Scalar::Util qw(weaken);
+:   weaken($xxxx);
 
 ---------------------------------------------------------
 * 14. オブジェクトに関する高度なトピック
@@ -193,10 +192,10 @@ IO:Handleパッケージは入出力全般の基底クラス。
 
 ** 14.2 isa / can
  UNIVERSALパッケージで定義されている
-  Horse->isa('Animal')
-  $tv_horse->isa('Animal')
-  ----
-  $tv_horse->can('eat')
+:   Horse->isa('Animal')
+:   $tv_horse->isa('Animal')
+:   ----
+:   $tv_horse->can('eat')
 
  ** ref と isaの違い
     ref RaseHorse eq 'Animal'
@@ -205,9 +204,9 @@ IO:Handleパッケージは入出力全般の基底クラス。
  ** isa/canはブレスされたリファレンスかクラス名のように見える
     スカラーから出ないと呼び出せない
     この対応として evalでエラーをトラップすべし
-    e.g.)
-     if( eval { $xxx->isa('Animal') } ) {...}
-      evalでエラーをトラップした場合、evalはundefを返す
+:     e.g.)
+:      if( eval { $xxx->isa('Animal') } ) {...}
+:       evalでエラーをトラップした場合、evalはundefを返す
 
 ** 14.3 AUTOLOAD
  メソッドが見つからない場合呼び出される
@@ -217,16 +216,16 @@ IO:Handleパッケージは入出力全般の基底クラス。
  遅らせることができる
 
 ** 14.4
- ucfirst  引数の最初の文字を大文字に変換したものを返す
- uc       すべての文字を大文字に変換
+ - ucfirst  引数の最初の文字を大文字に変換したものを返す
+ - uc       すべての文字を大文字に変換
 
 ** 14.5 Class::MethodMaker
 
- use Class::MethodMaker
-   new_with_init => 'new',
-   get_set => [-eiffel => [qw(color height name age)]],
-   abstract => [qw(sound)],
-;
+:  use Class::MethodMaker
+:    new_with_init => 'new',
+:    get_set => [-eiffel => [qw(color height name age)]],
+:    abstract => [qw(sound)],
+: ;
  - newは自動生成され、initを呼び出す
    独自の初期化はinitに記述する
  - eiffelフラグはEiffel言語のやり方を使うことを表す
@@ -238,69 +237,806 @@ IO:Handleパッケージは入出力全般の基底クラス。
      現在はVersion2であり、以下のように記述する
      ** Ver2ではVer1の記法もある程度サポートしている模様
         詳細は Class::MethodMaker::V1Compat のPOD
- use Class::MethodMaker
-   [ scalar => [qw(color height name age)],
-     new => [qw(new)],
-   ];
+:  use Class::MethodMaker
+:    [ scalar => [qw(color height name age)],
+:      new => [qw(new)],
+:    ];
 
 
 ---------------------------------------------------------
 * 15. Exporter
 
 ** 15.1 use
-use oooo::xxx qw(aa bb cc);
- ↓
-BEGIN {
-  require oooo::xxx;
-  oooo::xxx->import( qw(aa bb cc) );
-}
+: use oooo::xxx qw(aa bb cc);
+  ↓
+: BEGIN {
+:   require oooo::xxx;
+:   oooo::xxx->import( qw(aa bb cc) );
+: }
 
 - requireの::はOSネイティブのセパレータに置換され末尾に .pmが付く
-　→ require oooo/xxx.pm;
+ → require oooo/xxx.pm;
 - requireで呼び出されるファイルは真の値を返す必要があるため
   慣例的に最後の行は1;とされる
 
 ** 15.3 @EXPORTと@EXPORT_OK
-packate File::Basename;
-our @EXPORT = qw(basename, dirname, fileparse);
-use base qw(Exporter);
+: package File::Basename;
+: our @EXPORT = qw(basename, dirname, fileparse);
+: use base qw(Exporter);
+ File::Basename->importが呼ばれ、@EXPORTの内容をインポートする
 
-- File::Basename->importが呼ばれ、@EXPORTの内容をインポートする
-
-our @EXPORT = qw(ooo, ooo);    デフォルトでインポートされる
-our @EXPORT_OK = qw(ooo, ooo); デフォルトではインポートされないが
-                               要求されればインポート可能
- ** 上記以外のインポートは不可だが、ooo::xxx::iii と直接
+: our @EXPORT = qw(ooo, ooo);    デフォルトでインポートされる
+: our @EXPORT_OK = qw(ooo, ooo); デフォルトではインポートされないが
+:                                要求されればインポート可能
+:  ** 上記以外のインポートは不可だが、ooo::xxx::iii と直接
    呼び出すことは可能
 
 ** 15.4 %EXPORT_TAGS
 インポートのグループを定義し、タグで識別することができる
- use oooo (:タグ名);
-
-our @EXPORT = qw(......);
-our @EXPORT_OK = qw(......);
-our %EXPORT_TAGS = (
-  all       => [@EXPORT, @EXPORT_OK],
-  gps       => [qw(..., ...)],
-  direction => [qw(..., ..., ...)],
-);
-
-  ↓
-use oooo:xxx qw(:direction);
-
+: use oooo (:タグ名);
+: 
+: our @EXPORT = qw(......);
+: our @EXPORT_OK = qw(......);
+: our %EXPORT_TAGS = (
+:   all       => [@EXPORT, @EXPORT_OK],
+:   gps       => [qw(..., ...)],
+:   direction => [qw(..., ..., ...)],
+: );
+: 
+ ↓
+: use oooo:xxx qw(:direction);
+: 
 ** 15.5 オブジェクト指向モジュールでのエクスポート
 オブジェクト指向モジュールでは一般に何もエクスポートしない
 
 ** 15.6
  caller 組み込み関数
- ($package, $file, $line) = caller;
-
+:  ($package, $file, $line) = caller;
+: 
 
 ---------------------------------------------------------
-* 16.
- cpanでのREADMEのダウンロードと表示
+* 16. ディストリビューションの書き方
+
+- ディストリビューションのテンプレートファイルを作成
+: $ h2xs -XAn <モジュール名>
+
+  : `-- A-B-C
+  :    |-- Changes
+  :    |-- MANIFEST
+  :    |-- Makefile.PL
+  :    |-- README
+  :    |-- lib
+  :    |   `-- A
+  :    |       `-- B
+  :    |           `-- C.pm
+  :    `-- t
+  :        `-- A-B-C.t
+
+: $ perl Makefile.PL
+ Makefileを生成する。Makefile.PL はPerlスクリプト
+ Makefileを元にインストール、テストを行う
+
+- 代替のインストール場所 (16.5)
+: $ perl Makefile.PL PREFIX=<path>
+
+ ※makeに依存せずPerlで実装された Module::Build もある
+: $ perl Build.PL
+
+- Makefileによる処理
+ - テスト
+: $ make test
+
+ - インストール
+: $ make install
+
+ - アーカイブの作成
+MANIFESTに含まれるファイルが対象
+: $ make tardist   ... tar.gz形式
+: $ make zipdist   ... zip形式
+
+
+- blah blah blah
+lib/.../*.pm や README には 'blah blah blah' という記述があるが、
+作者自身で置き換える箇所であることを示している。
+
+- POD部分とPerlコード部分の切り替え
+行頭が =    で始まると PODモードになり、
+行頭が =cut で始まると Perlモードになる
+
+- コードとドキュメントのミックス
+h2xs で作成されるプロトタイプのソースは、POD部分は __END__ の後にまとめて存在するが、
+コードとドキュメントを交互に表示するやり方もある。
+#+BEGIN_SRC cperl -n
+Package AAA::BBB::CCC;          ↑Perlコード
+                                ↓
+=head1 NAME                     ↑
+                                ｜POD
+AAA::BBB::CCC - ***********
+
+=head1 SYNOPSIS
+
+  use AAA::BBB:CCC;
+    :
+    :
+
+=head1 DESCRIPTION
+
+  **************
+  **************
+
+=over
+
+=item aaa($filename)
+
+  <aaa の説明>
+                                ｜POD
+=cut                            ↓
+
+sub aaa {                       ↑
+  my $filename = shift;         ｜Perlコード
+   :                            ｜
+}                               ｜
+                                ↓
+=item bbb()                     ↑
+                                ｜POD
+  <bbb の説明>
+                                ｜
+=cut                            ↓
+sub bbb {                       ↑Perlコード
+   :
+}
+
+=back                           ↑POD
+                                ｜
+=head1 SEE ALSO
+    :
+    :
+=head1 AUTHOR
+    :
+    :
+=head1 COPYRIGHT AND LICENSE
+    :
+    :
+=cut
+
+1;
+#+END_SRC
+
+- cpanでのREADMEのダウンロードと表示
  > readme ooo::xxxxx
 
 
 
 
+
+=====================================================
+* 17. 基本的なテスト
+- Test::More
+Test::Moreは、Perl 5.8以降は標準ディストリビューションに添付されている
+
+テスト例 1.
+#+BEGIN_SRC cperl
+#!/usr/bin/perl
+use Test::More tests => 5;    <<< テスト数
+#use Test::More 'no_plan';    <<< 開発中などテスト数が不定の時の指定
+
+ok (1, '1 is true');
+is (2+2, 4, 'The sum is 4');
+is(2*3, 6, 'The product is 6');
+isnt(2 ** 3, 6, "The result isn't 6");
+like('Alpaca Book', qr/alpaca/i, 'I found an alpaca!');
+unlike('Rakuda Book', qr/alpaca/i, "I can't found an alpaca...");
+
+my $divide = 5/3;
+cmp_ok(abs($divide - 1.666667), '<', 0.00001, 
+       '5/3 should be (approx) 1.666667');
+#+END_SRC
+
+テスト例 2. (オブジェクト指向)
+#+BEGIN_SRC cperl
+my $trigger = Horse->new('Trigger');
+
+isa_ok ($trigger, 'Horse');
+isa_ok ($trigger, 'Animal');
+isa_ok ($trigger, 'UNIVERSAL');
+# isa_ok ($trigger, 'Fish');   # fail
+can_ok ($trigger, $_) for qw(eat color);
+is ($trigger->{name}, 'Trigger', "name is Trigger");
+is ($trigger->name, 'Trigger', "name is Trigger (got by sub)");
+#+END_SRC
+
+- テストのTODOリスト (17.7)
+$TODO にテストが失敗すると考えら得る理由をセットする
+
+#+BEGIN_SRC cperl
+TODO: {
+    local $TODO = "haven't talk yet";
+    can_ok ($trigger, 'talk');
+}
+#+END_SRC cperl
+
+TODO項目にした場合
+: not ok 8 - Horse->can('talk') # TODO haven't talk yet   <<< $TODOのメッセージが表示
+: #   Failed (TODO) test 'Horse->can('talk')'             <<< (TODO)と認識
+: #   at /Users/takuya/work/perl/misc/t17-2.pl line 46.
+: #     Horse->can('talk') failed
+: 1..8   <<< テストは成功扱い
+
+TODO項目にしなかった場合
+: not ok 8 - Horse->can('talk')
+: #   Failed test 'Horse->can('talk')'
+: #   at /Users/takuya/work/perl/misc/t17-2.pl line 46.
+: #     Horse->can('talk') failed
+: 1..8
+: # Looks like you failed 1 test of 8.    <<< テスト失敗
+
+- テストのスキップ (17.8)
+
+SKIPというラベルでブロックを作成する。
+ブロックの先頭でskip()関数を呼び出し、スキップする理由と何個のテスト粗スキップするか指定する。
+
+この機能は、特定の条件下でないと動作しない場合(特定のOSやPerlのバージョンなど）に用いるべきであり、
+単に未実装だからという理由の場合はSKIPではなくTODOを用いるべきである。
+
+#+BEGIN_SRC cperl
+SKIP: {
+    local $mod = "DBI::mysql";
+
+    skip "$mod is not available", 2
+        unless eval {require $mod1};
+    ok (0, 'aaaaaaa');
+    ok (0, 'bbbbbbbb');
+}
+#+END_SRC
+
+
+- 複数のテストスクリプト
+t/01-xxxx.t, t/02-yyyy.t, ... のように複数のテストスクリプトを作成すると、
+Test::Harnessはデフォルトでこれらのテストファイルを順番に実行する
+
+Test::Manifestを用いると、 t/test_manifest に記載されている順番でテストを行う
+
+
+
+
+- テストハーネス (Test::Harness)
+make test を行うとき、Makefileは Test::Harnessモジュールを使ってテストを実行し、結果を報告する
+
+ - テストの終了
+ テストコード内で、exitやdieを行ってもそのファイル内のテストを終了するだけで、テスト全体を終了するわけではない。
+ 標準出力に "bail out" と出力するとテスト全体を終了することができる。
+
+
+=====================================================
+* 18. 高度なテスト
+** 18.1 大規模な文字列のテスト (Test::LongString)
+Test::LongString
+   文字列を比較。違いがある場所と文字列の長さを表示する
+  - is_string_nows  ( $string, $expected [, $label ] )
+  - like_string     ( $string, qr/regex/ [, $label ] )
+  - unlike_string   ( $string, qr/regex/ [, $label ] )
+  - contains_string ( $string, $substring [, $label ] )
+  - lacks_string    ( $string, $substring [, $label ] )
+
+
+#+BEGIN_SRC cperl
+use Test::More 'no_plan';
+use Test::LongString;
+
+is_string("aaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "aaaaaaaaaaaaaaaaaaaaaaaaaaaba");
+#+END_SRC
+
+: not ok 1
+: #   Failed test at /Users/takuya/work/perl/misc/t18.pl line 8.
+: #          got: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+: #       length: 29
+: #     expected: "aaaaaaaaaaaaaaaaaaaaaaaaaaaba"
+: #       length: 29
+: #     strings begin to differ at char 28 (line 1 column 28)
+: 1..1
+: # Looks like you failed 1 test of 1.
+
+** 18.2 ファイルのテスト (Test::File)
+Test::File
+ファイル関連のテストの意図をより明確にできる。
+
+　※ファイルの有無のテストは、Test::MoreのOK関数を用い、
+  :OK (-e <ファイルパス>)
+  とすれば行えるが、file_exists_ok()を用いればテストの意図がより明確になる。
+
+  - file_exists_ok                ( FILENAME [, NAME ] )
+  - file_not_exists_ok            ( FILENAME [, NAME ] )
+  - file_empty_ok                 ( FILENAME [, NAME ] )
+  - file_not_empty_ok             ( FILENAME [, NAME ] )
+  - file_size_ok                  ( FILENAME, SIZE [, NAME ]  )
+  - file_max_size_ok              ( FILENAME, MAX [, NAME ] )  ...MAX以下でOK
+  - file_min_size_ok              ( FILENAME, MIN [, NAME ] )
+  - file_line_count_is            ( FILENAME, COUNT [, NAME ]  )
+  - file_line_count_isnt          ( FILENAME, COUNT [, NAME ]  )
+  - file_line_count_between       ( FILENAME, MIN, MAX, [, NAME ]  )
+  - file_readable_ok              ( FILENAME [, NAME ] )
+  - file_not_readable_ok          ( FILENAME [, NAME ] )
+  - file_writeable_ok             ( FILENAME [, NAME ] )
+  - file_not_writeable_ok         ( FILENAME [, NAME ] )
+  - file_executable_ok            ( FILENAME [, NAME ] )
+  - file_not_executable_ok        ( FILENAME [, NAME ] )
+  - file_mode_is                  ( FILENAME, MODE [, NAME ] )
+  - file_mode_isnt                ( FILENAME, MODE [, NAME ] )
+  - file_is_symlink_ok            ( FILENAME [, NAME] )
+  - symlink_target_exists_ok      ( SYMLINK [, TARGET] [, NAME] )
+  - symlink_target_dangles_ok     ( SYMLINK [, NAME] )
+  - symlink_target_is             ( SYMLINK, TARGET [, NAME] )
+  - symlink_target_is_absolute_ok ( SYMLINK [, NAME] )
+  - link_count_is_ok              ( FILE, LINK_COUNT [, NAME] )
+  - link_count_gt_ok              ( FILE, LINK_COUNT [, NAME] )
+  - link_count_lt_ok              ( FILE, LINK_COUNT [, NAME] )
+  - owner_is                      ( FILE , OWNER [, NAME] )
+  - owner_isnt                    ( FILE, OWNER [, NAME] )
+  - group_is                      ( FILE , GROUP [, NAME] )
+  - group_isnt                    ( FILE , GROUP [, NAME] )
+
+** 18.3 STDOUTやSTDERRのテスト (Test::Output, Test::Warnings)
+Test::Output
+
+  - stdout_is      ( $coderef, $expected, ’description’ );
+  - stdout_is      { ... } $expected, ’description’;
+  - stdout_isnt    ( $coderef, $expected, ’description’ );
+  - stdout_isnt    { ... } $expected, ’description’;
+  - stdout_like    ( $coderef, qr/$expected/, ’description’ );
+  - stdout_like    { ... } qr/$expected/, ’description’;
+  - stdout_unlike  ( $coderef, qr/$expected/, ’description’ );
+  - stdout_unlike  { ... } qr/$expected/, ’description’;
+
+  - stderr_is      ( $coderef, $expected, ’description’ );
+  - stderr_is      {... } $expected, ’description’;
+  - stderr_isnt    ( $coderef, $expected, ’description’ );
+  - stderr_isnt    {... } $expected, ’description’;
+  - stderr_like    ( $coderef, qr/$expected/, ’description’ );
+  - stderr_like    { ...} qr/$expected/, ’description’;
+  - stderr_unlike  ( $coderef, qr/$expected/, ’description’ );
+  - stderr_unlike  { ...} qr/$expected/, ’description’;
+
+  - combined_is     ( $coderef, $expected, ’description’ );
+  - combined_is     {... } $expected, ’description’;
+  - combined_isnt   ( $coderef, $expected, ’description’ );
+  - combined_isnt   {... } $expected, ’description’;
+  - combined_like   ( $coderef, qr/$expected/, ’description’ );
+  - combined_like   { ...} qr/$expected/, ’description’;
+  - combined_unlike ( $coderef, qr/$expected/, ’description’ );
+  - combined_unlike { ...} qr/$expected/, ’description’;
+
+  - output_is    ( $coderef, $expected_stdout, $expected_stderr, ’description’ );
+  - output_is    {... } $expected_stdout, $expected_stderr, ’description’;
+  - output_isnt  ( $coderef, $expected_stdout, $expected_stderr, ’description’ );
+  - output_isnt  {... } $expected_stdout, $expected_stderr, ’description’;
+  - output_like   ( $coderef, $regex_stdout, $regex_stderr, ’description’ );
+  - output_like   { ... } $regex_stdout, $regex_stderr, ’description’;
+  - output_unlike ( $coderef, $regex_stdout, $regex_stderr, ’description’ );
+  - output_unlike { ... } $regex_stdout, $regex_stderr, ’description’;
+
+*** 警告の有無の確認
+Test::Warnings
+Test::Moreのテスト数に加えておく ("Test::More tests =>" の値)
+
+#+BEGIN_SRC cperl
+#!/usr/bin/perl
+use warnings;
+use Test::More tests => 1;
+use Test::NoWarnings;
+$num = 1;
+#+END_SRC
+　↓
+#+BEGIN_EXAMPLE
+1..1
+not ok 1 - no warnings
+#   Failed test 'no warnings'
+#   at /Library/Perl/5.8.9/Test/NoWarnings.pm line 38.
+# There were 1 warning(s)
+# 	Previous test 0 ''
+# 	Name "main::num" used only once: possible typo at /Users/takuya/work/perl/misc/t18.pl line 39.
+#  at /Users/takuya/work/perl/misc/t18.pl line 39
+# 
+# Looks like you failed 1 test of 1.
+#+END_EXAMPLE
+
+
+** 18.4 モックオブジェクトを使ったテスト (Test::MockObject)
+Test::MockObject
+
+example 1.
+#+BEGIN_SRC cperl
+use Test::More 'no_plan';
+use Test::MockObject;
+
+my $mirrow = Test::MockObject->new();
+$mirrow->set_true ( 'engines_on' )
+    ->set_false ( 'moored_to_dock' )
+    ->set_list ('alpha_list', 'a', 'b', 'c', 'd', 'e', 'f', 'g')
+    ->set_series( 'amicae', 'Sunny', 'Kylie', 'Bella');
+
+
+#+END_SRC
+
+example 2.
+#+BEGIN_SRC cperl
+use Test::More 'no_plan';
+use Test::MockObject;
+
+my $db = Test::MockObject->new();
+$db->mock (
+           list_names => sub {qw (aa bbb cccc)}
+          );
+my @names = $db->list_names;
+
+is (scalar @names, 3);
+is ($names[0], 'aa');
+is ($names[1], 'bbb');
+is ($names[2], 'cccc');
+#+END_SRC
+
+** 18.5 PODのテスト (Test::Pod, Test::Pod::Coverage)
+
+- Test::Pod
+t/pod.t
+#+BEGIN_SRC cperl
+use Test::More;
+eval "use Test::Pod 1.00";
+plan skip_all => "Test::Pod 1.00 required for test POD" if $@;
+
+all_pod_files_ok();
+#+END_SRC
+
+- Test::Pod::Coverage
+ドキュメントに対応するエントリを持たないサブルーチンを表示する
+
+t/pod-coverage.t
+#+BEGIN_SRC cperl
+use Test::More;
+eval "use Test::Pod::Coverage";
+plan skip_all => "Test::Pod::Coverage required for testing pod coverage" if $@;
+
+all_pod_coverage_ok();
+#+END_SRC
+
+
+** 18.6 カバレッジテスト (Devel::Cover)
+Devel::Cover
+coverというプログラムが付属
+
+-MDevel::Cover を指定して実行後、
+coverを実行すると、cover_db/以下に結果が出力される
+
+ - cover_db/coverage.html にサマリ情報とカバレッジ統計、各ファイルの詳細ページへのリンクが表示される
+ - $ cover -delete でカバレッジ結果を削除 (ディレクトリcover_dbごと削除する模様)
+
+特定のプログラムのカバレッジ
+: $ perl -MDevel::Cover <perlプログラム>
+: $ cover
+
+ディストリビューション
+: $ cover -delete
+: $ HARNESS_PERL_SWITCHES=-MDevel::Cover make test
+: $ cover
+テストハーネススイッチは環境変数 HARNESS_PERL_SWITCHES で指定
+
+** 18.7 独自の Test::* モジュールの開発 (Test::Builder)
+
+- 独自のテストモジュール (t18_7.pm)
+#+BEGIN_SRC cperl
+package t18_7;
+use strict;
+use warnings;
+use base qw(Exporter);
+use vars qw(@EXPORT $VERSION);
+use Test::Builder;
+
+my $test = Test::Builder->new();
+$VERSION = '0.10';
+@EXPORT = qw(check_required_items_ok);
+
+sub check_required_items_ok {
+    my $who = shift;
+    my $items = shift;
+    my @required = qw (preserver sunscreen water_bottle jacket);
+    my @missing = ();
+
+    for my $item (@required) {
+        unless (grep $item eq $_, @{$items}) {
+            push @missing, $item;
+        }
+    }
+    if (@missing) {
+        $test->diag("$who needs @missing.\n");
+        $test->ok(0);
+    } else {
+        $test->ok(1);
+    }
+}
+
+1;
+#+END_SRC cperl
+
+- 上記のモジュールを用いたテストコード
+#+BEGIN_SRC cperl
+#!/usr/bin/perl
+use strict;
+use warnings;
+use lib '.';
+use Test::More 'no_plan';
+use t18_7;
+
+my @items = qw(red_shirt hat lucky_socks water_bottle);
+#push @items, qw(sunscreen preserver jacket);
+check_required_items_ok ('Gilligan', \@items);
+#+END_SRC cperl
+
+
+テスト結果 (preserver, sunscreen, jacketが足りないと表示される)
+: # Gilligan needs preserver sunscreen jacket.
+: not ok 1
+: #   Failed test at /Users/takuya/work/perl/misc/t18-7.pl line 10.
+: 1..1
+: # Looks like you failed 1 test of 1.
+
+独自のテストモジュールをテストするには、Test::Builder::Tester を用いる
+
+
+* Practice
+** 1　イントロダクション
+*** answer
+** 2　中級者の基礎知識
+*** answer
+** 3　モジュールの使い方
+*** answer
+** 4　リファレンス入門
+*** answer
+** 5　リファレンスとスコープ
+*** answer
+** 6　複雑なデータ構造の操作
+*** answer
+** 7　サブルーチンへのリファレンス
+*** answer
+** 8　ファイルハンドルへのリファレンス
+*** answer
+** 9　リファレンスを使った実践的なテクニック
+*** answer
+** 10　大規模なプログラムの構築
+*** answer
+** 11　オブジェクト入門
+*** 1.
+Animal, Cow, Horse, Sheep, Mouseクラスを定義し、use strictを指定する。
+ユーザに1つずつ動物の名前を入力するように求め、個々の動物を一度ずつ鳴かせる。
+**** answer
+#+BEGIN_EXAMPLE
+use strict;
+{
+    package Animal;
+    sub speak {
+        my $class = shift;
+        print "$class speak ", $class->sound, "!\n";
+    }
+}
+{
+    package Cow;
+    our @ISA = qw(Animal);
+    sub sound {
+        return "mo-";
+    }
+}
+{
+    package Horse;
+    our @ISA = qw(Animal);
+    sub sound {
+        return "hihi-n";
+    }
+}
+{
+    package Sheep;
+    our @ISA = qw(Animal);
+    sub sound {
+        return "me-";
+    }
+}
+{
+    package Mouse;
+    our @ISA = qw(Animal);
+    sub sound {
+        return "cyu〜";
+    }
+}
+#----------------
+my @target_animals;
+print "type: Cow or Horse or Sheep or Mouse  (empty to finish)\n";
+{
+    chomp (my $animal = <STDIN>);
+    $animal = ucfirst lc $animal;
+    last if $animal eq "";
+    unless ($animal =~ /^(Cow|Horse|Sheep|Mouse)$/) {
+        print "*** unknown animal\n";
+        redo;
+    }
+    push @target_animals, $animal;
+    redo;
+}
+
+foreach my $animal (@target_animals) {
+    $animal->speak;
+}
+#+END_EXAMPLE
+
+*** 2.
+Animalに加え、Personクラスを定義し、これらがLivingCreatureというクラスを継承するようにする。
+speakメソッドは言うべきことを指定する引数を取るようにし、省略時はsoundから言うべきことを取り出すようにする。
+(Personの場合はハミングする)
+動物のspeakメソッドは引数を取らないようにする。
+言うべきことを与えないでPersonを呼び出すコードと、言うべきことを与えてPersonを呼び出すコードを書いて
+Personクラスを試す。
+**** answer
+#+BEGIN_EXAMPLE
+use strict;
+{
+    package LivingCreature;
+    sub speak {
+        my $class = shift;
+        if (@_) {
+            print "$class speak ", @_, "!\n";
+        } else {
+            print "$class speak ", $class->sound, "!\n";
+        }
+    }
+    sub sound {
+        die "LivingCreature should define sound";
+    }
+}
+{
+    package Animal;
+    our @ISA = qw(LivingCreature);
+    sub speak {
+        my $class = shift;
+        $class->SUPER::speak($class->sound);
+    }
+}
+{
+    package Person;
+    our @ISA = qw(LivingCreature);
+    sub sound {
+        "fufu----n";
+    }
+}
+{
+    package Cow;
+    our @ISA = qw(Animal);
+    sub sound {
+        "mo-";
+    }
+}
+{
+    package Horse;
+    our @ISA = qw(Animal);
+    sub sound {
+        "hihi-n";
+    }
+}
+{
+    package Sheep;
+    our @ISA = qw(Animal);
+    sub sound {
+        "me-";
+    }
+}
+{
+    package Mouse;
+    our @ISA = qw(Animal);
+    sub sound {
+        "cyu〜";
+    }
+}
+#----------------
+
+{
+    print "type: Cow or Horse or Sheep or Mouse or Person (empty to finish)\n";
+    chomp (my $input = <STDIN>);
+    my ($creature, $word) = split /\s+/, $input;
+    $creature = ucfirst lc $creature;
+    last if $creature eq "";
+    unless ($creature =~ /^(Cow|Horse|Sheep|Mouse|Person)$/) {
+        print "*** unknown creature ($creature)\n";
+        redo;
+    }
+
+    if ($word){
+        $creature->speak($word);
+    } else {
+        $creature->speak;
+    }
+    redo;
+}
+#+END_EXAMPLE
+
+** 12　データのあるオブジェクト
+Animalクラスに名前と色の取得/設定機能を追加。use strictを指定しても動作するようにする。
+ゲッターはAnimalのインスタンスを渡しても、そのサブクラスである特定の動物のインスタンスを渡しても動作するようにする。
+次のコードを使ってテストする。
+#+BEGIN_EXAMPLE
+my $tv_horse = Horse->new('Mr. Ed');
+$tv_horse->set_name('Mister Ed');
+$tv_horse->set_color('grey');
+print $tv_horse->name, ' is ', $tv_horse->color, "\n";
+print Sheep->name, ' colored ', Sheep->color, ' goes ', Sheep->sound, "\n";
+#+END_EXAMPLE
+
+動物全般の名前や色を設定するように要求されたときにはどうすべきか？
+
+*** answer
+#+BEGIN_SRC cperl -n
+#!/usr/bin/perl
+use strict;
+
+{package Animal;
+ use Carp qw(croak);
+ sub new {
+     ref (my $class = shift) and croak "class name needed";
+     my $name = shift;
+     bless {name=>$name, color=>'unknown color'}, $class;
+ }
+ sub name {
+     my $self = shift;
+     ref $self ? $self->{name} : "unnamed $self";
+ }
+ sub set_name {
+     my $self = shift;
+     my $name = shift;
+     $self->{name} = $name;
+ }
+ sub color {
+     my $self = shift;
+     ref $self ? $self->{color} : "unknown colored $self";
+ }
+ sub set_color {
+     my $self = shift;
+     my $color = shift;
+     $self->{color} = $color;
+ }
+ sub sound {
+     croak "subclass must define a sound"
+ }
+}
+{package Horse;
+ our @ISA = qw(Animal);
+ sub sound {
+     "hihi---n";
+ }
+}
+{package Sheep;
+ our @ISA = qw(Animal);
+ sub sound {
+     "me---";
+ }
+}
+
+my $tv_horse = Horse->new('Mr. Ed');
+print $tv_horse->name, ' is ', $tv_horse->color, "\n";
+$tv_horse->set_name('Mister Ed');
+$tv_horse->set_color('grey');
+print $tv_horse->name, ' is ', $tv_horse->color, "\n";
+print $tv_horse->name, ' goes ', $tv_horse->sound, "\n";
+print Sheep->name, ' colored ', Sheep->color, ' goes ', Sheep->sound, "\n";
+#+END_SRC
+
+** 13　オブジェクトのデストラクション
+*** answer
+** 14　オブジェクトに関する高度なトピックス
+*** answer
+** 15　Exporter
+*** answer
+** 16　ディストリビューションの書き方
+*** answer
+** 17　基本的なテスト
+My::List::Util モジュールを作成する。
+sum()とshuffle()の２つのルーチンをエクスポートする
+*** answer
+
+** 18　高度なテスト
+*** answer
+** 19　CPANへの投稿
+*** answer
