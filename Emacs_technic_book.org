@@ -164,7 +164,7 @@ ELPA実行
 : (ffap-bindings)
 C-x C-fで、現在位置のファイル・URLがデフォルトで表示される
 
-** TODO 同一の名前のファイルを開くときバッファ名を分かりやすくする [4.2]
+** [#A] 同一の名前のファイルを開くときバッファ名を分かりやすくする [4.2]
 "filename<2>" ではなくディレクトリ名を付加して表示する
 
 .emacs
@@ -179,7 +179,7 @@ C-x C-fで、現在位置のファイル・URLがデフォルトで表示され�
 ** recentf.el [4.4]
   /anythingでできるので未使用/
 
-** TODO bookmark.el [4.5] 
+** [#A] bookmark.el [4.5] 
 :C-x r m (bookmark-set)
 :C-x r l (bookmark-bmenu-list)
 
@@ -265,6 +265,10 @@ root権限で編集する外部プログラムだが、環境変数VISUAL,EDITOR
 ファイルおよび見出しを一覧するフレームを表示
 : M-x speedbar
 
+** elscreen
+prefixキーをデフォルトのC-tからC-zに切り替える
+(elscreen-set-prefix-key "\C-t")
+
 * Chapter05 カーソル移動
 ** transient-mark-mode
 .emacs
@@ -296,8 +300,7 @@ root権限で編集する外部プログラムだが、環境変数VISUAL,EDITOR
 : (define-key global-map (kbd "<f7>") 'point-undo)
 : (define-key global-map (kbd "S-<f7>") 'point-redo)
 
-
-** TODO bm.el [5.7]
+** [#A] bm.el [5.7]
 カーソル位置を記憶し行をハイライト表示。 \\
 記憶した箇所を保存可能。
 
@@ -322,6 +325,23 @@ root権限で編集する外部プログラムだが、環境変数VISUAL,EDITOR
 : (add-hook 'after-save-hook 'bm-buffer-save)
 : ;; Restore bookmarks when buffer is reverted.
 : (add-hook 'after-revert-hook 'bm-buffer-restore)
+
+** ウインドウ間の移動
+デフォルトで C-x o に割り当てられている other-window を
+他の押しやすいキーにも割り当てる
+: (global-set-key (kbd "C-M-o") 'other-window)
+
+C-M-o はデフォルトでは split-line に割り当てられている
+
+*** windmoveについて
+windmove で、shift + カーソルキーにより移動できるようになるが
+ホームポジションから手を移動させなければいけない、
+他のキーへの割り当ても考えたが適当なものが見つからなかったため使用していない
+
+** フレームの作成/移動
+: C-x 5 2 新規フレームを開く
+: C-x 5 0(ゼロ) フレームを閉じる
+: C-x 5 o(オー) フレーム間移動
 
 * Chapter06 入力支援
 ** autoinsert.el　[6.1]
@@ -364,7 +384,7 @@ C-x r t : 矩形領域を文字で置き変える (string-rectangle)
 ** M-/  バッファから単語を補完 [6.4]
 M-/ (debbrev-expand)
 
-** TODO yasnippet.el  [6.5 - 6.6]
+** [#A] yasnippet.el  [6.5 - 6.6]
 略語から定型文を入力する
 
 *** 導入
@@ -486,7 +506,7 @@ C-c C-w (reb-copy)           コピー
 C-c C-q (reb-quit)           終了
 #+END_EXAMPLE
 
-** TODO M-x occur 正規表現にマッチした行一覧を作成 [7.2]
+** [#A] M-x occur 正規表現にマッチした行一覧を作成 [7.2]
 /color-moccur.el も参照/
 #+BEGIN_EXAMPLE
 (occur)    正規表現に一致する箇所の一覧を作成する
@@ -523,7 +543,7 @@ C-u を付けると前後の行も表示
 ** C-M-% 正規表現置換 [7.5]
 /未使用/
 
-** TODO color-moccure.el [7.6]-[7.7]
+** [#A] color-moccure.el [7.6]-[7.7]
 #+BEGIN_EXAMPLE
  M-x occur-by-moccur
  あるいは
@@ -556,7 +576,7 @@ C-u を付けると前後の行も表示
 : M-g M-p    前のマッチ行 (previous-error)
 :  (この操作は M-x compile や M-x occur の結果に対する操作と同じ)
 
-** TODO grep-a-lot.el [7.10]
+** [#A] grep-a-lot.el [7.10]
 複数の =*grep*= バッファを扱う
 : M-g =   	現在のgrepバッファを開く (grep-a-lot-restart-context)
 : M-g ]		次のgrepバッファを開く   (grep-a-lot-goto-next)
@@ -570,7 +590,7 @@ C-u を付けると前後の行も表示
 :(grep-a-lot-seup-keys)
 :(grep-a-lot-advise igrep)  ;; for igrep user
 
-** TODO grep-edit.el [7.11]
+** [#A] grep-edit.el [7.11]
 検索結果を編集する
 : C-c C-e   	変更を反映する			(grep-edit-finish-edit)
 : C-c C-r   	リージョンの変更を破棄する	(grep-edit-remove-change)
@@ -653,7 +673,7 @@ install && .emacs
 : (require 'w3m-load)
 : (autoload 'w3m "w3m" "Interface for w3m on Emacs." t)
 : 
-** TODO evernote-mode
+** [#A] evernote-mode
 
 : ; evernote-mode
 : ;;  http://code.google.com/p/emacs-evernote-mode/
@@ -665,8 +685,7 @@ install && .emacs
 : (global-set-key "\C-cew" 'evernote-write-note)
 
 * Chapter09 外部プログラム
-
-** TODO シェルコマンドの実行 [9.3]
+** [#A] シェルコマンドの実行 [9.3]
    : M-!   (shell-command) シェルコマンドを実行
 : C-u M-!               結果をカレントバッファに挿入
 :
@@ -674,7 +693,7 @@ install && .emacs
 : C-u M-|                         結果をリージョンと置き換える
 :
 
-** TODO スクリプトの実行 [9.6]
+** [#A] スクリプトの実行 [9.6]
 : M-x executable-interpret
 
 ** diff [9.7]
@@ -686,7 +705,6 @@ install && .emacs
 : C-c C-c で該当箇所にジャンプ
 
 * Chapter10 テキスト整形/テキスト処理
-
 ** 行をソート [10.2]
 Emacsのコマンドでソートする方法と、sortコマンドを (C-u) M-| で実行する２つの方法がある。
 |----------------+-------------------------------+-----------------------|
@@ -701,7 +719,7 @@ Emacsのコマンドでソートする方法と、sortコマンドを (C-u) M-| 
 ** 引用マーク [10.3]
 [Emacs標準の矩形処理] を参照
 
-** TODO boxes [10.4]
+** [#A] boxes [10.4]
 M-| から boxesコマンドを使用
 
 http://boxes.thomasjensen.com/download.shtml
@@ -736,7 +754,7 @@ EUC-JPで渡し、UTF-8に戻すことで対応できる
 :(jboxes)
 : #!/bin/sh
 : lv -Oe | boxes "$@" | lv -Ou8 | cat
-** TODO 桁揃え [10.5]
+** [#A] 桁揃え [10.5]
 :リージョンに対し実行
 : M-x align
 : C-u M-x align   一部のルールは C-uを指定しないと動作しない
@@ -838,7 +856,7 @@ summarye.el
 : ;; Ediff Control Panel用の専用のフレームを生成しない
 : (setq ediff-window-setup-function 'ediff-setup-windows-plan)
 
-** TODO ediff-merge-files [13.6]
+** [#A] ediff-merge-files [13.6]
 別のバッファでマージする
 : M-x ediff-merge-files
 
@@ -853,14 +871,14 @@ summarye.el
 ** ブロックを折り畳む [13.8]
 /〜未評価/
 
-** TODO imenu 関数定義にジャンプ (現在のファイル内) [13.9]
+** [#A] imenu 関数定義にジャンプ (現在のファイル内) [13.9]
 バッファの目次を作成（プログラミングなら関数の一覧、HTMLなら見出し）
 : M-x imenu
 
 ミニバッファでどこに移動するか聞いてくる。
 指定するとその箇所にジャンプする。
 
-** TODO 現在の関数名をモードラインに表示 [13.10]
+** [#A] 現在の関数名をモードラインに表示 [13.10]
 : M-x which-func-mode
 
 (?) which-function-mode というのもあるが ...同じ?
@@ -877,7 +895,7 @@ summarye.el
 : M-x flymake-mode
 /〜未評価/
 
-** TODO ファイルに直接書き込まずメモを取る (ipa.el) [13.12]
+** [#A] ファイルに直接書き込まずメモを取る (ipa.el) [13.12]
 
 : ipa-insert            　現在位置にメモを書く
 : ipa-edit              　カーソルより後にあるメモを編集
@@ -905,7 +923,7 @@ anythingでしおりをリストすることができる
 : ;; ipa.el (install-elisp-from-emacswiki "ipa.el")
 : (require 'ipa)
 
-** TODO ファイルのスナップショットを取る [13.13]
+** [#A] ファイルのスナップショットを取る [13.13]
 ブランチを作ってやるより手軽。
 そのバッファを消すとスナップショットは失われるので注意。
 
@@ -941,7 +959,7 @@ http://ctags.sourceforge.net/
 : M-x visit-tags-table 　他のタグファイルを指定
 : 
 
-** TODO GNU GLOBAL (gtags) [13.15]
+** [#A] GNU GLOBAL (gtags) [13.15]
 *** GNU GLOBAL
  - C/C++, Yacc, Java, PHP4のみに対応
  - 関数定義部分だけでなく参照箇所も検索可能
@@ -1130,7 +1148,6 @@ Export時に、下付きを無効にする場合は 出力オプション("#+OPT
 :#+END_SRC
  - <language>    メジャーモードの名称 (e.g. emacs-lisp, perl, ..)
  - [-n], [+n]    行番号を付ける。 +n ではその前の行番号を引き継ぐ
-
 
 
 
@@ -1326,7 +1343,7 @@ TODO のキーワードは org-todo-keywords変数で設定する
 : C-c / T   org-sparse-trees T     タグを検索
 C-c C-c でハイライトを消せる
 
-** TODO org-agenda [14.14]
+** [#A] org-agenda [14.14]
 
 .emacs
 : (global-set-key (kbd "C-c a") 'org-agenda)
@@ -1412,7 +1429,6 @@ org-export-* で調べられる。Ascii, HTML, xoxo(?), iCalendar形式でエク
 | author    | 著作情報を出力するかどうか                           | nil/t     |
 | creator   | 出力ツール(Emacs, Org-mode)情報を出力するかどうか    | nil/t     |
 | timestamp | タイムスタンプを出力するかどうか                     | nil/t     |
-
 
 
 
