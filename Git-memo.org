@@ -32,6 +32,24 @@ git diff --cached [コミットオブジェクト(省略時はHEAD)] インデ�
   git diff          はワークツリーとの差分を表示する。引数を省略した場合、比較相手はインデックスになる
   git diff --cached はインデックスとの差分を表示する。引数を省略した場合、比較相手はHEADになる
 
+
+git diff --decorate    コミットIDの箇所に、ブランチ名とタグ名が追加表示される
+ (e.g.)
+  73ade0eb0b4dab6a4f79082e939c34f552a9db56 _(tag: refs/tags/release_7.01e)_
+
+git diff --name-only HEAD^ HEAD       git diffをファイル名だけ確認する
+ http://planetcakephp.org/aggregator/items/6111-git%E8%87%AA%E5%88%86%E7%94%A8%E3%81%AEgit%E5%82%99%E5%BF%98%E9%8C%B2
+
+git diff --stat     diffstat形式
+ (e.g.)
+  : $ git diff --stat HEAD..HEAD^
+  :  lisp/org-exp-blocks.el |    2 +-
+  :  1 files changed, 1 insertions(+), 1 deletions(-)
+
+git diff --word-diff  単語をハイライト
+
+
+*** diff表示
 : $ git diff
 : diff --git a/aa b/aa
 : index 72943a1..b386eef 100644
@@ -55,6 +73,8 @@ git log --grep=<pattern>   ログメッセージで検索
                            (複数指定)
                              OR検索　--grep=aa --grep=bb
                             AND検索  -all-match --grep=aa --grep=bb
+git log --left-right master...customize   コミットの差分をどちらのものかを示しつつ表示
+
 その他
  --stat           各コミットで変更されたファイルの統計情報を表示する
  --shortstat      --stat コマンドのうち、変更/追加/削除 の行だけを表示する
@@ -64,9 +84,19 @@ git log --grep=<pattern>   ログメッセージで検索
  --relative-date  完全な日付フォーマットではなく、相対フォーマット (“2 weeks ago”など) で日付を表示する
  --graph          ブランチやマージの歴史を、ログ出力とともにアスキーグラフで 表示する
 
+  ※ git log --oneline --decorate --graph [--all]　でgitkの表示とほぼ同じになる
 
 ** git show
 git show     最新のコミット内容を表示  (=  git log -1 -p) 
+
+git show :/<regex>    正規表現にマッチするコミットメッセージを持つ最後のコミットを表示
+http://keijinsonyaban.blogspot.com/2010/11/git-tips.html
+(e.g.)
+ : $ git show :/fix
+ : # メッセージ中に "fix" を含む最後のコミットを表示
+ : 
+ : $ git show :/^Merge
+ : # 最後のマージコミットを表示
 
 ** git blame <path>  ファイル内の各行がどのコミットで記録されたかを表示
 
@@ -89,17 +119,14 @@ git mv <file_from> <file_to>  ファイルを移動/名前変更
 : git rm <file_from>
 : git add <file_to>
 
-
 ** git remote
 git remote add  <リモート名> <リポジトリ>  リモートリポジトリを追加
 git remote                              リモート名の一覧を表示
 git remote -v                           リモート名の一覧にURLを付加して表示
 git remote show <リモート名>              リモートの詳細を表示
-
+   git remote show origin   git URLを確認する 
 git remote rename <リモート名(変更前)> <リモート名(変更後)>  リモート名を変更
 git remote rm <リモート名>                リモートを削除
-
-
 
  'origin' はgit-cloneしたときに、クローン元のサーバに対してデフォルトでつけられれる名前
 ** git fetch
@@ -107,7 +134,6 @@ git fetch <リモート名>   リモートリポジトリからデータを取�
 
  git-fetch ではデータをローカルリポジトリに引き出すだけで、ローカル環境にマージすることはない
  
-
 ** git clone
 git clone コマンドは
 
@@ -119,6 +145,7 @@ git push <remote-name> :<branch>     リモートブランチの削除
 ** git tag
 git tag タグの一覧を表示
 git tag -l '<パターン>' パターンを指定してタグを検索
+git tag -l -n   タグメッセージも表示
 
 *** タグの作成
 Git のタグには、軽量 (lightweight) 版と注釈付き (annotated) 版の二通りがあります。
@@ -140,12 +167,15 @@ Git のタグには、軽量 (lightweight) 版と注釈付き (annotated) 版の
 git push <リモート名> <タグ名>  指定したタグを送信する
 git push <リモート名> --tags   リモートサーバに存在しないタグ全てを送信する
 
-
 ** git branch
 git branch  [-v]          ブランチ一覧を表示 [直近のコミット情報を付加]
 git branch  --merged      マージ済みのブランチを表示 (git v1.5.6以降)
 git branch  --no-merged   マージされていないブランチを表示
 git branch -d <ブランチ>   ブランチを削除 (-D で強制)
+git branch --contains <rev>    指定した変更が含まれているブランチを表示
+
+** git show-branch
+ $ git show-branch --all | less
 
 ** git merge
 git merge <マージ元ブランチ>     マージ（マージ先のブランチで実行）
@@ -201,13 +231,85 @@ get rebase <branch>   リベース
           \
           +C8_C9+
 
+** git cherry
+  http://keijinsonyaban.blogspot.com/2010/11/git-tips.html
+  : # "feature" ブランチにいる場合に：
+  : $ git cherry -v master
+  : 
+  : + 497034f2 Listener.new now accepts a hash of options
+  : - 2d0333ff cache the absolute images path for growl messages
+  : + e4406858 rename Listener#run to #start
+  : 
+  : cherry コマンドは例えば、開発中のブランチから安定しているブランチへ cherry-pick が行われたコミットを調べるのに便利だ。
+  : このコマンドは現在（feature）のブランチと上流（master）のブランチを比較して、両方に存在しているものには "-" をつけて表示する。
+  : 上流にまだ存在しない変更には "+" マークをつける。
 
+** git stash
+git stash <save> ["message"]   現在の状態を保存し、変更を戻す
+   ↓
+git stash pop   [stash@{n}]    保存しておいた状態に戻す。（保存状態は破棄）
+git stash apply [stash@{n}]    保存しておいた状態に戻す。（保存状態は捨てない）
+
+git stash list         stashの一覧を表示
+git stash drop         stashを破棄
+
+（参考）http://transitive.info/article/git/command/stash/
+
+*** 使用例、変更作業を一時中断し、他のブランチに移動し、戻ってくる
+変更している状態で他のブランチに移動しようとするとエラーになる
+ : $ git checkout master
+ : error: Your local changes to the following files would be overwritten by checkout:
+ :         a
+ :         b
+ : Please, commit your changes or stash them before you can switch branches.
+ : Aborting
+
+このとき以下のようにすると、変更内容が一時待避でき、ソースは元の変更前の状態に
+戻るので、ブランチの移動もできるようになる。
+ : $ git stash save
+ : 
+ : $ git stash                 省略形
+ : $ git stash save "message"  メッセージを付加する場合
+
+で、以下のようにすると、先ほどの変更内容が元に戻せる
+ pop  の場合は保存している状態を削除する
+ applyの場合は削除しない
+ : $ git stash pop
+ : $ git stash pop $stash@{1}   特定のstashを指定
+ :
+ : $ git stash apply
+ : $ git stash apply $stash@{1}   特定のstashを指定
+
+** git cat-file
+git cat-file -t af5626b     ファイルのタイプを返す (blob)
+git cat-file blob af5626b  
+
+** git name-rev
+ある変更がどのリリースの一部なのか見つける
+  git name-rev --name-only 7b211c8
+
+(サンプルスクリプト : 全コミットに対して実施)
+#+BEGIN_SRC cperl -n
+#!/usr/bin/perl
+use strict;
+use warnings;
+
+my $wdir="/Users/Shared/data/src/emacs-org-mode/org-mode";
+
+chdir $wdir;
+
+foreach (`git log --pretty=oneline`) {
+    print;
+    my ($sha1, $log) = split /\s+/;
+    print "  ==> " . `git name-rev --name-only $sha1`;
+}
+#+END_SRC
 
 
 * UseCase
 ** 変更の一部分をコミットする
 変更内容の意味ごとにコミットを分割するために行う
- - ファイル内のコミットする箇所を指定   git add -p
+ - ファイル内のコミットする箇所を指定   git add -p[--patch]
  - コミットするファイルを指定          git commit <path>
 
 ** 変更を取り消す
@@ -221,6 +323,9 @@ get rebase <branch>   リベース
 
    git revert <コミット>   コミットを取り消す
    git reset HEAD^        最後のコミットオブジェクトを削除する
+
+** 最後のコミットに最新の変更を追加してコミット
+   git commit --amend
 
 ** バックアップリポジトリを作製
 mkdir -p /<backup dir>/xxxxx.git
@@ -240,9 +345,150 @@ git push
   双方のリポジトリで共有しているブランチを全て転送する
 
 
+** 差分に関連するコミットIDを取得 (diffとblameの組み合わせ)
+(サンプル)
+ ここでは、org-modeのあるファイル(list/ob.el)に対して
+ origin/mintedブランチとorigin/masterブランチの間のdiffをとり、
+ 差分のある行番号と行数を求め、git-blameに渡している。
+ 
+#+BEGIN_SRC cperl -n
+#!/usr/bin/perl
+use strict;
+use warnings;
+
+my $wdir="/Users/Shared/data/src/emacs-org-mode/org-mode";
+chdir $wdir;
+
+my $file = "lisp/ob.el";
+my $br_target = "origin/minted";
+my $br_base = "origin/master";
+
+my $tfile;
+my $sline_1;
+my $lnum_1;
+my $sline_2;
+my $lnum_2;
+foreach (`git diff -U0  $br_target..$br_base $file`) {
+    print;
+    chomp;
+    if (/^\+\+\+\s+(.*)/) {
+        $tfile = $1;
+        print "  >>>>>>> file=$tfile\n";
+    }elsif (/^@@\s+\-([0-9]+),?([0-9]*)\s+\+([0-9]+),?([0-9]*)/) {
+        $sline_1 = $1;
+        $lnum_1 = $2 ? $2 : 1;
+        $sline_2 = $3;
+        $lnum_2 = $4 ? $4 : 1;
+        print "  >>>>>>> - $sline_1,$lnum_1 / + $sline_2,$lnum_2\n";
+        &print_git_blame ($file, $br_target, $sline_1, $lnum_1);
+        print "-----------------\n";
+        &print_git_blame ($file, $br_base, $sline_2, $lnum_2);
+        print " ==================================\n";
+
+    }
+}
+
+sub print_git_blame {
+    my $file = shift;
+    my $rev = shift;
+    my $sline = shift;
+    my $lnum = shift;
+
+    foreach (`git blame -sl -L $sline,+$lnum  $rev $file`) {
+        print;
+    }
+}
+#+END_SRC
+
+サンプルの実行結果 (一部)
+#+BEGIN_EXAMPLE
+diff --git a/lisp/ob.el b/lisp/ob.el
+index b4425b6..6e98263 100644
+--- a/lisp/ob.el
++++ b/lisp/ob.el
+  >>>>>>> file=b/lisp/ob.el       <<<< ここでは1ファイルを指定したが、複数のファイルを一括して処理する場合はここからファイル名を取得する
+@@ -79 +79,3 @@
+  >>>>>>> - 79,1 / + 79,3　　　　  <<<< 行番号と行数を取得                                                              ____
+3785722e9255b552c62e594b73164330404a70a1 79) (declare-function org-list-bottom-point "org-list" ())                  ↑
+-----------------                                                                                              git-blameの実行結果      
+2adbcfffe1b61aa36bd3ba20b9eb269513c32995 79) (declare-function org-list-struct "org-list" ())
+bd68169b4b6676d2a40c858f58a0e2ac842c588d 80) (declare-function org-list-prevs-alist "org-list" (struct))
+b219690f0554adfe5fa2d2aebf8c0b08b1d04859 81) (declare-function org-list-get-list-end "org-list" (item struct prevs)) ↓
+ ==================================                                                                                 ----
+-(declare-function org-list-bottom-point "org-list" ())                                                        以下通常のgit-diffの出力の続き
++(declare-function org-list-struct "org-list" ())
++(declare-function org-list-prevs-alist "org-list" (struct))
++(declare-function org-list-get-list-end "org-list" (item struct prevs))
+:
+:
+#+END_EXAMPLE
+
+** 変更作業中に、他のブランチに移動して別件の処理を行う
+git stashを用いる
+
+
+* Trobule
+** git push で "insufficient permission for adding an object to repository database ./objects" というエラーが出る
+
+ : $ git push origin master
+ : Counting objects: 86, done.
+ : Delta compression using up to 4 threads.
+ : Compressing objects: 100% (73/73), done.
+ : error: insufficient permission for adding an object to repository database ./objects
+ : 
+ : fatal: failed to write object
+ : error: pack-objects died with strange error
+ : error: failed to push some refs to '/var/local/git/rom_budget.git'
+
+ この回避方法は分からなかったが、以下のようにすると成功した
+
+ : $ git push git://10.158.40.17/arch/rom_budget.git master
+ : Counting objects: 33, done.
+ : Delta compression using up to 4 threads.
+ : Compressing objects: 100% (27/27), done.
+ : Writing objects: 100% (27/27), 8.34 KiB, done.
+ : Total 27 (delta 15), reused 0 (delta 0)
+ : To git://10.158.40.17/arch/rom_budget.git
+ :    0bd7758..97bfce1  master -> master
+
+** git clone で "fatal: The remote end hung up unexpectedly" というエラーがでる
+ : $ git clone git://10.158.40.17/arch/rom_budget.git
+ : Cloning into rom_budget...
+ : fatal: The remote end hung up unexpectedly   <<<<<<<<
+
+原因： git のproxyを設定していたせい。（おそらく外部に探しに行って見つからない、といった状況かと思われる）
+対処： 環境変数 GIT_PROXY_COMMAMDに corkscrew を呼ぶ スクリプト(git-proxy.shのようなスクリプト)が
+　　　 設定されているので、これを一時的に無効にする
+
+課題： 環境変数を調整しないでも、使えるようにしたい
+
+
+* Tool
+** gitsum.el  (git add --patch を行う Emacs lisp ?)
+  http://chneukirchen.org/blog/archive/2008/02/introducing-gitsum.html
+
+** TODO megit
 
 
 * 資料
 (a) 入門Git
 
+** 「Gitをボトムアップから理解する」
+HEAD: 現在チェックアウトされているコミットは常に HEAD と呼ばれる。
+      特定のコミットを――ブランチ名を使う代わりに――チェックアウトしたら、HEAD はそのコミットだけを指し、現在どのブランチ上にもいないという状態になる。
+      (例)
+         $ git checkout fda9022
+         $ git branch
+         * (no branch)
+           master
 
+^ とか ~
+  name^^^^^ は name~5 と同じ
+  name^2 は2番目の親、を示す
+
+name:path   コミットの特定のファイルを示す
+
+rebase  開発ブランチに、メインブランチの変更を反映するときに便利 (マージコミットが不要)
+
+         main  **abc     --->  **abc-xyz
+         devel  +xyz           
