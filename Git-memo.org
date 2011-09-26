@@ -48,6 +48,10 @@ git diff --stat     diffstat形式
 
 git diff --word-diff  単語をハイライト
 
+git diff --check    意図したもの ではないと思われる空白文字を探し表示する
+ ->http://progit.org/book/ja/ch5-2.html  「プロジェクトへの貢献 > コミットの指針」
+
+
 
 *** diff表示
 : $ git diff
@@ -179,6 +183,12 @@ git branch --contains <rev>    指定した変更が含まれているブラン�
 
 ** git merge
 git merge <マージ元ブランチ>     マージ（マージ先のブランチで実行）
+
+git merge --no-commit --squash <ブランチ> 
+   --squash オプションは、マージしたいブランチでのすべての作業をひとつのコミットにまとめ、現在のブランチの先頭にマージする。
+   --no-commit オプションは、自動的にコミットを 記録しないよう Git に指示する
+ ->http://progit.org/book/ja/ch5-2.html  「プロジェクトへの貢献 > 小規模な公開プロジェクト」
+   
 
 *** コンフリクト発生時
  git status  ----> 'unmerged:' と表示される
@@ -440,7 +450,18 @@ git stashを用いる
  : error: pack-objects died with strange error
  : error: failed to push some refs to '/var/local/git/rom_budget.git'
 
- この回避方法は分からなかったが、以下のようにすると成功した
+ リモートサーバを確認すると、originが変な場所を示していた
+  : $ git remote -v
+  : gitrepo git://10.158.40.17/arch/rom_budget.git
+  : hoge    git://10.158.40.17/arch/rom_budget_new.git
+  : origin  /var/local/git/rom_budget.git           <<<<<<<<<<<<<<
+
+  →正しい場所を指すように修正
+  : $ git remote rm origin
+  : $ git remote add origin git://10.158.40.17/arch/rom_budget.git
+
+
+ ※リモートサーバを設定せず、以下のようにしてもpushは可能
 
  : $ git push git://10.158.40.17/arch/rom_budget.git master
  : Counting objects: 33, done.
