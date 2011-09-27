@@ -696,6 +696,12 @@ install && .emacs
 ** [#A] スクリプトの実行 [9.6]
 : M-x executable-interpret
 
+(参考) EmacsのCPerlモードで C-c e e に割り当て
+: (add-hook 'cperl-mode-hook
+:         (lambda ()
+:   	       (local-set-key "\C-c e e" 'executable-interpret)))
+: 
+
 ** diff [9.7]
 
 .emacs
