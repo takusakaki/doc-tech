@@ -1,6 +1,7 @@
 #+TITLE:     Git-memo.org
 #+LANGUAGE:  jp
-#+TEXT:      Some descriptive text to be emitted.  Several lines OK.
+#+OPTIONS:   ::t H:3 num:nil toc:t \n:t @:t ::t |:t ^:nil -:t f:t *:t <:t
+#+TEXT:      
 #
 # 進捗 「入門Git」からの転記 --> 
 
@@ -23,18 +24,18 @@ git reset <path>  インデックスの変更をもとに戻す
 git reset HEAD^   最後のコミットオブジェクトを削除する
 git reset --hard HEAD^   最後のコミットオブジェクトを削除し、変更内容も取り消す
 ** git diff
-git diff        変更点を確認（インデックス<-->ワークツリー）
-git diff HEAD   変更点を確認（HEAD<-->ワークツリー）
-git diff --cached [コミットオブジェクト(省略時はHEAD)] インデックスからの変更点を確認 (HEAD<-->インデックス)
+: git diff        変更点を確認（インデックス<-->ワークツリー）
+: git diff HEAD   変更点を確認（HEAD<-->ワークツリー）
+: git diff --cached [コミットオブジェクト(省略時はHEAD)] インデックスからの変更点を確認 (HEAD<-->インデックス)
 
-  HEAD <-- インデックス <-- ワークツリー
+:  HEAD <-- インデックス <-- ワークツリー
 
-  git diff          はワークツリーとの差分を表示する。引数を省略した場合、比較相手はインデックスになる
-  git diff --cached はインデックスとの差分を表示する。引数を省略した場合、比較相手はHEADになる
+   git diff          はワークツリーとの差分を表示する。引数を省略した場合、比較相手はインデックスになる
+   git diff --cached はインデックスとの差分を表示する。引数を省略した場合、比較相手はHEADになる
 
 
-git diff --decorate    コミットIDの箇所に、ブランチ名とタグ名が追加表示される
- (e.g.)
+: git diff --decorate    コミットIDの箇所に、ブランチ名とタグ名が追加表示される
+: (e.g.)
   73ade0eb0b4dab6a4f79082e939c34f552a9db56 _(tag: refs/tags/release_7.01e)_
 
 git diff --name-only HEAD^ HEAD       git diffをファイル名だけ確認する
