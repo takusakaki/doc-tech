@@ -952,11 +952,34 @@ anythingでしおりをリストすることができる
 Exuberant Ctags:
 http://ctags.sourceforge.net/
 
+これは古いかもしれない
 : ctags -e ファイル名 ...   TAGSファイルを作成
 : ctags -e *              カレントディレクトリすべてを対象
 : ctags -e **/*           サブディレクトリも対象
 :
 : ctags --list-maps   拡張子と言語の一覧を表示
+
+新しいのはこちらかもしれない
+:[例] カレントディレクトリ以下のPerlのファイルを対象にctagを作成
+: ctags --verbose -e --recurse --languages=Perl 
+:
+:  -e   Output tag file for use with Emacs.
+:
+:  --recurse=[yes|no]
+:       Recurse into directories supplied on command line [no].
+:
+:  --languages=[+|-]list
+:       Restrict files scanned for tags to those mapped to langauges
+:       specified in the comma-separated 'list'. The list can contain any
+:       built-in or user-defined language [all].
+:
+:  (その他)
+:  --list-languages
+:       Output list of supported languages.
+:  --list-maps=[language|all]
+:       Output list of language mappings.
+: 
+
 
 *** 操作
 : M-. (find-tag)       　定義箇所にジャンプ
