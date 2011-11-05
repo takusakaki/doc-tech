@@ -866,6 +866,17 @@ summarye.el
 別のバッファでマージする
 : M-x ediff-merge-files
 
+** ediff-regions-wordwise, ediff-regions-linewise
+ http://www.gside.org/blowg/e/user/tma/entry/200711152051
+
+ ediff-regions-wordwiseはword単位、
+ ediff-regions-linewiseは行単位で比較結果を表示してくれる。
+
+ まず M-x ediff-regions-wordwise とした後、比較対象のバッファを2つ指定する。
+ (事前に比較するファイルを開いておく必要あり)
+ その後、それぞれのバッファが開くので、コピーするときと同じ要領で C-SPACE と M-w で比較対象となる部分を選択。
+ 選択後は C-M-c を押す。
+
 ** C言語のプリプロセッサを隠す [13.7]
 .emacs
 : (require 'hideif)
