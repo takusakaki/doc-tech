@@ -1,0 +1,65 @@
+#+TITLE:     Ant memo
+#+LANGUAGE:  jp
+#+TEXT:      
+
+* コマンドライン
+** ヘルプ
+   -help, -h
+
+** ビルドファイル(xml)の指定
+引数なしでantを実行するとカレントディレクトリのbuild.xmlを適用
+-buildfile file    build.xml以外を使う
+-find [file]       親ディレクトリにさかのぼって探す
+                   [file]が未指定の場合は build.xmlを探すが
+                   後ろに他の引数を付ける場合はbuild.xmlであっても指定する必要がある
+
+** プロパティの指定
+-D<property>=<value>
+
+** ログの出力量
+-quiet < -verbose < -debug
+
+** ターゲットの一覧
+-projecthelp
+  description属性のあるターゲットはメインターゲットとして表示
+  無いものはサブターゲットとして表示
+
+
+* タスク
+コアタスク
+http://www.jajakarta.org/ant/ant-1.6.1/docs/ja/manual/coretasklist.html
+オプションタスク
+http://www.jajakarta.org/ant/ant-1.6.1/docs/ja/manual/optionaltasklist.html
+
+ - Ant 指定されたビルドファイルに対しAntを実行、サブプロジェクトのビルドに用いる
+ - AntCall 同じビルドファイル内で別のターゲットを実行する
+ - Exec システムコマンドを実行、OS属性指定で指定されているOS上のみで実行
+ - Java Javaクラスを実行、fork属性で別のVMで実行
+ - Parallel 別のタスクを取り入れる、個別のスレッドで実行
+ - Sequential 別のタスクを取り入れる、順序どおり実行
+ 
+ - fail
+    ビルドを終了
+    message属性、あるいは<fail>message</fail>でメッセージを出力
+
+ - Input ビルドプロセス無いでユーザ対話処理を行う
+ - Script ant内に記述されたスクリプトのコードを実行する
+ - Sql JDBC経由でDBに接続しSQLを実行
+ - Typedef プロジェクトに新しいデータ型を追加
+ - Echoproperties 現在のプロパティを一覧表示
+ 
+
+
+
+* 未整理
+** 環境変数の参照
+propertyタスクのenvironment属性
+
+** ライブラリのディレクトリ
+デフォルトで、ANT_HOME/lib と ${user.home}/.ant/lib 以下のjarがCLASSPATHに追加される
+-lib オプションでCLASSPATHを指定
+
+* 設定することで適用される環境変数
+ - JAVACMD   Java実行ファイルのフルパス
+ - ANT_OPTS  JVMに渡される引数  (例)システムプロパティやJavaの最大ヒープサイズ
+ - ANT_ARGS  Antの引数

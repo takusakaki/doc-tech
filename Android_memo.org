@@ -1,0 +1,53 @@
+
+* コマンドライン
+
+** コマンドラインからビルド　[ah#40]
+*** プロジェクトの作成
+ - android list targets でバージョンを表示し、idを確認する
+
+ - プロジェクト作成
+:$ android create project \
+:   --target 3 \
+:   --path ./MyProject \      # ない場合は作られる
+:   --activity MyActivity \
+:   --package ts.test.myproject
+
+ - プロジェクト更新 (バージョン変更)
+ */android create project/ で作成していない既存のプロジェクトに対しても有効(build.xmlが作られantビルドが可能になる)
+:$ android update project \
+:   --target 2 \
+:   --path ./MyProject
+
+*** ビルド
+: $ ant debug
+bin/の下にapkが生成される
+
+*** インストール/アンインストール
+:$ adb install bin/TestActivity-debug.apk   # apkファイル名を指定
+:$ adb uninstall ts.test.Test               # パッケージ名を含んだクラス名を指定
+:$ adb uninstall -k ts.test.Test            # データを残したままアンインストール
+:   ---> これで無いとだめかも adb shell pm uninstall -k ts.test.Test
+
+
+** adb
+*** アクティビティを起動
+:$ adb shell am start -n com.xxxx.yyyy.zzzzz/.Settings
+                         パッケージ名/.クラス名
+
+
+
+** AndroidManifest.xml
+*** ランチャーに表示させるための指定 [ah#6]
+<intent-filter> で以下のように指定する 
+:    <application ....
+:        <activity ....
+:            <intent-filter>
+:                <action android:name="android.intent.action.MAIN" />
+:                <category android:name="android.intent.category.LAUNCHER" />
+:            </intent-filter>
+:        </activity>
+
+
+* 参考文献
+ - ah  --- Book : Android Hack
+
