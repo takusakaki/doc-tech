@@ -1,0 +1,487 @@
+#+TITLE:     Android Test
+#+AUTHOR:    Takuya Sakakibara
+#+EMAIL:     takuya@Macintosh-7.local
+#+DATE:      2012-01-06 Fri
+#+DESCRIPTION:
+#+KEYWORDS:
+#+LANGUAGE:  en
+#+OPTIONS:   H:3 num:t toc:t \n:nil @:t ::t |:t ^:t -:t f:t *:t <:t
+#+OPTIONS:   TeX:t LaTeX:t skip:nil d:nil todo:t pri:nil tags:not-in-toc
+#+INFOJS_OPT: view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
+#+EXPORT_SELECT_TAGS: export
+#+EXPORT_EXCLUDE_TAGS: noexport
+#+LINK_UP:   
+#+LINK_HOME: 
+#+XSLT:
+
+** TOOD
+*** TODO Jenkins + ant によるテスト実行
+ + [7/10]
+   - [X] テスト実行
+   - [X] テスト結果(Junit)をJenkins上で表示
+   - [X] テスト結果を置くディレクトリの作成 (/sdcard/unittest)
+   - [X] カバレッジ取得(Emma)
+   - [X] カバレッジの結果をJenkins上で表示
+   - [X] 静的解析の実施(FindBugs/CheckStyle)
+   - [X] 静的解析の結果をJenkins上で表示
+   - [ ] メトリクス測定 http://perl-users.jp/articles/advent-calendar/2011/test/11 (Perlの場合)
+   - [ ] Gitから取得してから処理
+   - [ ] Gerrit Trigger 
+   - [1/1] misc
+     - [X] テストプロジェクトのbuild.xmlに追加した処理を外部ビルドファイルに移動し、build.xmlから読み込むようにする
+
+*** TODO Eclipse によるテスト実行
+ + [1/3]
+   - [X] テスト実行
+   - [ ] カバレッジ取得(Emma)
+   - [ ] 静的解析の実施(FindBugs/CheckStyle)
+
+
+
+* 参考
+- Testing and Instrumentation
+  https://sites.google.com/site/androidtestclub/translation/testing-and-instrumentation
+
+- 書籍1
+ Androidエンジニア養成読本　技術評論社
+
+- Ant 外部ツール
+http://www.jajakarta.org/ant/ant-1.5/docs/external.html
+
+* Test API
+JUnitを元に拡張したAPIとInstrumentationフレームワークがある
+前者はJUnitのTestCaseを継承する
+
+** JUnitのAPI
+
+*** Activity
+ActivityInstrumentationTestCase2
+ 機能テストのためにデザインされていて、通常のシステムのインフラの中でActivityのテストをします
+ Androidの他の部分との相互作用をテストしたいのなら、ActivityInstrumentationTestCase2 を使う
+ActivityUnitTestCase
+ Activityについての回帰テストを行いたいのなら、ActivityUnitTestCase を使う
+
+*** Service
+ServiceTestCase
+
+*** ContentProvider
+ProviderTestCase2
+
+
+----
+
+java.lang.Object
+   ↳ 	junit.framework.Assert
+  	   ↳ 	junit.framework.TestCase
+  	  	   ↳ 	android.test.InstrumentationTestCase
+  	  	  	   ↳ 	android.test.ActivityTestCase
+  	  	  	  	   ↳ 	android.test.ActivityInstrumentationTestCase2<T extends android.app.Activity>
+
+* JUnit
+
+標準の状態ではJUnitの結果を表す情報が十分でなく、Jenkins上でJUnitのテスト結果を表すことができない。
+ここでは、InstrumentationTestRunner を詳細なJUnitの結果を生成する機能が追加された TestRunnerに差し替える
+
++ TestRunner をJUnitの詳細な結果を生成するものに変更
+ - テストアプリのAndroidManifest.xmlで定義している InstrumentationTestRunnerを変更
+ :     <instrumentation android:targetPackage="com.example.helloandroid" 
+ : - 		android:name="android.test.InstrumentationTestRunner" />
+ : +		android:name="com.neenbedankt.android.test.InstrumentationTestRunner" />
+ : 
+
+ - test.runnnerを指定
+   これは、<sdk>/tools/ant/build.xml の testターゲット内で定義している InstrumentationTestRunnerを上書きする
+  <テストアプリ>/ant.properties
+ : test.runner=com.neenbedankt.android.test.InstrumentationTestRunner
+
+
++ Jenkins
+ - Jenkinsのビルド設定で、ビルド後に テスト結果のファイル(TEST-all.xml) をダウンロードする
+ - 上記ファイルをJUnitの結果として指定する
+
+
+* Emma
+- Jenkinsへ Emma Plugin を追加
+  ※Emma Coverage Column というプラグインもあるが未確認
+
+- Android SDKの tools/ant/build.xmlの編集
+   - JUnitの詳細な結果を生成するTestRunnerを指定
+   - Emma Pluginに渡すXML形式のカバレッジレポートを生成
+
+ : --- build.xml_org	2012-01-08 18:59:15.000000000 +0900
+ : +++ build.xml	2012-01-08 22:10:59.000000000 +0900
+ : @@ -1098,12 +1101,15 @@
+ :                          </infileset>
+ :                          <!-- TODO: reports in other, indicated by user formats -->
+ :                          <html outfile="coverage.html" />
+ : +						<xml outfile="coverage/coverage.xml" />      <<<< JenkinsのEmma pluginに渡すxml形式の結果を生成
+ :                     </report>
+ :                  </emma>
+ : +
+ :                  <echo>Cleaning up temporary files...</echo>
+ :                  <delete file="coverage.ec" />
+ :                  <delete file="coverage.em" />
+ : -                <echo>Saving the report file in ${basedir}/coverage/coverage.html</echo>
+ : +
+ : +				<echo>Saving the report file in ${basedir}/coverage/coverage.xml</echo>
+ :              </then>
+ :              <else>
+ :                  <run-tests-helper />
+
++ Jenkins
+ - antのターゲットに all と emma を追加
+ - Post-build Actions > Record Emma coverage report をチェックし、
+   Folders or files containing Emma XML reports :
+       ./coverage/coverage.xml
+   とする
+   ※./coverage/coverage*.xml とすると見つけられないというエラーとなった
+
+* FindBugs
++ findbugsのインストール
+(参考)https://wiki.jenkins-ci.org/display/JENKINS/Building+an+Android+app+and+test+project#BuildinganAndroidappandtestproject-FindBugs
+
+  http://findbugs.sourceforge.net/downloads.html からダウンロードして展開
+  lib/findbugs-ant.jar を antのlibにコピー 
+    ※/usr/share/java/ant-1.8.2/lib
+  アプリプロジェクトの local.properties に findbugsのインストールパスを設定
+    findbugs.home=/data/findbugs
+
+  R.javaを無視する設定
+  findbug-exclude.xml 
+ :    <?xml version="1.0" encoding="UTF-8"?>
+ :    <FindBugsFilter>
+ :    	<Match>
+ :    		<Class name="~.*\.R\$.*"/>
+ :    		<Bug code="Nm"/>
+ :    	</Match>
+ :    </FindBugsFilter>
+
+  build.xmlへ追加
+  : <taskdef name="findbugs" classname="edu.umd.cs.findbugs.anttask.FindBugsTask"/>
+  : 
+  : <target name="findbugs" depends="debug">
+  : 	<mkdir dir="reports" />
+  : 	<findbugs home="${findbugs.home}" output="xml" outputFile="reports/findbugs.xml" excludeFilter="findbugs-exclude.xml">
+  : 		<auxClasspath path="${android.jar}" />
+  : 		<class location="${out.dir}" />
+  : 	</findbugs>
+  : </target>
+  : 
+- Jenkinsへ FindBugs Plugin を追加
+
+- Jenkinsプロジェクトの設定
+  テスト対象プロジェクトへ移動し、 ant findbugsを実行
+　その結果生成された reports/findbugs.xml をテストアプリのプロジェクト (このJenkinsプロジェクトのWORKSPACE)にコピー
+  
+  FindBugs Pluginの設定
+  [x] Publish FindBugs analysis results
+  - FindBugs results:  reports/findbugs.xml
+
+   ※ テスト対象プロジェクトに生成されたレポートを、相対パスで指定しても認識されなかったので
+      テストアプリ側にコピーしている
+
+** スタンドアロンアプリの利用
+: $ <findbugs>/bin/findbugs reports/findbugs.xml
+とするとGUIのアプリが起動し、結果を参照できる
+
+* CheckStyle
+(参考) http://www003.upp.so-net.ne.jp/kaz-taka/checkstyle/3.5/index.html
+
++ checkstyleをインストール
+
+ build.xmlへ追加
+ : 	<!-- CheckStyle -->
+ : 	<taskdef resource="checkstyletask.properties"
+ :          classpath="${checkstyle.home}/checkstyle-5.5-all.jar"/>
+ : 	<target name="checkstyle"
+ : 			description="Generates a report of code convention violations.">
+ : 	  <mkdir dir="reports" />
+ :       <checkstyle config="${checkstyle.home}/sun_checks.xml" failOnViolation="false">
+ :         <fileset dir="src" includes="**/*.java"/>
+ :         <formatter type="xml" toFile="${checkstyle.report}"/>
+ :       </checkstyle>
+ :  	  <echo>Saving the report file in ${basedir}/${checkstyle.report}</echo>
+ : 	</target>
+
+　※local.prppertiesに以下を定義
+   - checkstyle.home  checkstyleのインストールパス
+　 - checkstyle.report  生成するレポートのパス
+
+- Jenkinsへ CheckStyle Plugin を追加
+
+- Jenkinsプロジェクトの設定
+  テスト対象プロジェクトへ移動し、 ant checkstyleを実行
+　その結果生成された reports/checkstyle.xml をテストアプリのプロジェクト (このJenkinsプロジェクトのWORKSPACE)にコピー
+  
+  CheckStyle Pluginの設定
+  [x] Publish Checkstyle analysis results
+  - CheckStyle results:  reports/checkstyle.xml
+
+
+
+
+
+
+
+* Jenkins 概要
+https://wiki.jenkins-ci.org/display/JENKINS/Building+an+Android+app+and+test+project
+
+
+http://sites.google.com/site/androidtestclub/translation/dev-guide/developing/testing/testing-in-other-ides
+
+
+ライブラリプロジェクトのテスト
+http://www.paulbutcher.com/2010/09/android-library-project-with-tests-step-by-step/
+
+
+
+** Jenkinsプロジェクトの設定
++ Project Name:  HelloAndroidTest
+
++ [x] This build is parameterized
+ + String Parameter
+   - Name : TARGET_PROJECT_PATH
+   - Default Value : ../HelloAndroid 
+
++ Advanced Project Options
+ + [x] Use custom workspace
+   - Directory: /Users/takuya/devel/Android/test_training/Androidchap4Jenkins/HelloAndroidTest
+
++ Build
+ - Execute Shell: cd $WORKSPACE
+
+ + Invoke Ant
+   - Ant Version: ant-1.8.2
+   - Targets:     all clean emma debug install test
+
+ - Execute Shell: adb pull /data/data/com.example.helloandroid/files/TEST-all.xml
+
+ - Execute Shell:
+    # Execute FindBugs, CheckStyle
+    cd $TARGET_PROJECT_PATH
+    rm -rf reports
+    ant findbugs checkstyle
+    cp -r reports $WORKSPACE
+
++ Post-build Actions
+  [x] Publish Checkstyle analysis results
+  - CheckStyle results:  reports/checkstyle.xml
+
+ [x] Publish FindBugs analysis results
+  - FindBugs results:  reports/findbugs.xml
+
+ [x] Record Emma coverage report 
+  - Folders or files containing Emma XML reports:  ./coverage/coverage.xml
+
+ [x] Publish JUnit test result report 
+  - Test report XMLs:   TEST-all.xml
+
+ 
+-----------------------------------------------------------------------------------------
+* Unclear
+- antによるビルド〜テストを行う run-tests ターゲットが見当たらない
+- ant debug でエラーになる
+     tools/ant/build.xml:512: subant task calling a target that depends on its parent target '-build-setup'.
+- Emmaで一部のクラスを無視する方法
+  R.javaにあるクラスを無視したい
+   http://emma.sourceforge.net/reference/ch02s06s02.html に記述があるfilterという指定が該当するようだが、
+    - <sdk>/tools/ant/build.xml での指定方法が分からない(testターゲット内にある<emma>内に入れてみたがエラーになる)
+    - そもそも build.xmlを編集しなければならないのはおかしい
+
+-----------------------------------------------------------------------------------------
+
+* Problems
+** [△] ant でのビルドとテストがうまくいかない
+- 概要
+Android developer にある　"Activity Testing (*1)" に基づいて SpinnerActivity というアプリのテストを作成。
+Eclipse上では正常にテストが実行できたのだが、antを使ったコマンドライン上でのビルドとテストが動作しない
+
+- 環境
+  Android Toolkit r16
+
+- 行ったこと
+(概要)
+書籍やAndroid Developerには android update test-project で作成し run-tests というターゲットで
+antを実行するように示されているがこのターゲットが無い。
+Web上で debug, installt, test と３つのターゲットを使う代替の手段を見つけたが、 debugターゲットによる
+ビルドでエラーになってしまう。
+＃どうやら、subant で 再びdebugターゲットを実行しようとして、エラーになっているらしいが...
+
+しかし、他のサンプル(HelloAndroid)を用いると debug, installt. test は全て正常に完了する。
+
+
+(詳細)
+1. antビルド用のファイルの生成
+: <SpinnerActivity>$ android update project -p.
+: <SpinnerActivityTest>$ android update test-project -m ../SpinnerActivity -p .
+
+
+2. run-tests ターゲットによるビルドとテスト実行
+: <SpinnerActivityTest>$ ant run-tests
+: Buildfile: /Users/Shared/devel/Android/test_training/Androidchap4Jenkins/HelloAndroidTest/build.xml
+:  
+: BUILD FAILED
+: Target "run-tests" does not exist in the project "HelloAndroidTest". 　　　　＜＜＜＜＜＜ run-testsターゲットが無い！
+
+3. debug installt test ターゲットによるビルドとテスト実行
+: <SpinnerActivityTest>$ ant debug
+: Buildfile: /Users/Shared/devel/workspace/SpinnerActivityTest/build.xml
+: 
+: -set-mode-check:
+: 
+: -set-debug-files:
+: 
+: -set-debug-mode:
+: 
+: -debug-obfuscation-check:
+: 
+: -setup:
+:     [setup] Android SDK Tools Revision 16
+:     [setup] Project Target: Android 1.5
+:     [setup] API level: 3
+:     [setup] 
+:     [setup] ------------------
+:     [setup] Resolving library dependencies:
+:     [setup] No library dependencies.
+:     [setup] 
+:     [setup] ------------------
+:     [setup] 
+: 
+: -build-setup:
+: 
+: -set-mode-check:
+: 
+: -set-debug-files:
+: 
+: -set-debug-mode:
+: 
+: -debug-obfuscation-check:
+: 
+: -setup:
+:     [setup] Android SDK Tools Revision 16
+:     [setup] Project Target: Android 1.5
+:     [setup] API level: 3
+:     [setup] 
+:     [setup] ------------------
+:     [setup] Resolving library dependencies:
+:     [setup] No library dependencies.
+:     [setup] 
+:     [setup] ------------------
+:     [setup] 
+: 
+: -build-setup:
+: 
+: BUILD FAILED
+: /Users/takuya/devel/android-sdk-mac_86/tools/ant/build.xml:512: The following error occurred while executing this line:
+: /Users/takuya/devel/android-sdk-mac_86/tools/ant/build.xml:512: subant task calling a target that depends on its parent target '-build-setup'.
+
+4. 他のサンプルによる確認 (正常)
+HelloAndroid と HelloAndroidTestを配置
+: <HelloAndroid>$ android update project -p.
+: <HelloAndroidTest>$ android update test-project -m ../HelloAndroid -p .
+: <HelloAndroidTest>$ ant debug   <<<<<< エラーは起きない
+: (エミュレータを起動)
+: <HelloAndroidTest>$ ant installt
+: <HelloAndroidTest>$ ant test
+: 
+: -test-project-check:
+: 
+: test:
+:      [echo] Running tests ...
+:      [exec] 
+:      [exec] com.example.helloandroid.test.HelloAndroidTest:..
+:      [exec] Test results for InstrumentationTestRunner=..
+:      [exec] Time: 1.668
+:      [exec] 
+:      [exec] OK (2 tests)
+:      [exec] 
+:      [exec] 
+: 
+: BUILD SUCCESSFUL
+: 
+>>>> 正常
+
+
+
+(*1)http://developer.android.com/guide/topics/testing/activity_testing.html
+
+**
+** [x] Jenkinsのビルド&テスト実行でエラー
+- 概要
+Jenkinsの設定のInvoke Ant でTargetsに "debug installt test"と指定すると、以下のようなエラーとなる
+: BUILD FAILED
+: /Users/takuya/devel/android-sdk-mac_86/tools/ant/build.xml:849: Cannot run two different modes at the same time. If you are running more than one debug/release/instrument type targets, call them from different Ant calls.
+
+これを、 "debug" と "installt test" の２つに分割するか、
+"clean emma debug install" とすると回避できた。
+(参考)http://code.google.com/p/android/issues/detail?id=20997
+
+** [x] Jenkinsのテスト結果の収集
+書籍1 に従い、　nbandroid-utils から InstrumentationTestRunnerをダウンロードし、
+Jenkinsの設定を以下のようにしたが、エラーとなる
+: adb shell am instrument -w HelloAndroidTest/com.neenbedankt.android.test.InstrumentationTestRunner
+: adb -s $ANDROID_AVD_DEVICE pull /data/data/HelloAndroidTest/fles/TESTall.xml
+
+以下のように変更したところうまくいった
+: adb shell am instrument -w com.example.helloandroid.test/com.neenbedankt.android.test.InstrumentationTestRunner
+: adb pull /data/data/com.example.helloandroid/files/TEST-all.xml
+(修正点)
+ - テスト対象のアプリ名は HelloAndroid ではなくcom.example.helloandroid
+ - テストアプリ名は HelloAndroidTest ではなくcom.example.helloandroid.test
+ - 環境変数 $ANDROID_AVD_DEVICE が設定されていなかったので adb コマンドのエラーとなる
+   このため -s $ANDROID_AVD_DEVICE を削除
+ - テスト結果のファイル名のパスは .../fles/TESTall.xml ではなく .../files/TEST-all.xml
+
+　　＝＞ ただし今回は、<sdk>/tools/ant/build.xml のtestターゲットにある InstumentationTestRunnerを
+        com.neenbedankt.... のものに変更したので、ant test でJUnitの結果を生成することにした
+
+** [△] FindBugs で "java.text.ParseException: Unparseable date: " というエラーが出る
+   java.text.ParseException: Unparseable date: "12/20/2011 09:17 PM EST"
+ 
+    ＝＞ とりあえずFindBugsの処理は正常に動作しているようなので、無視する
+
+
+
+
+test:
+     [echo] WARNING: Code Coverage is currently only supported on the emulator and rooted devices.
+     [echo] Running tests ...
+     [exec] 
+     [exec] com.example.helloandroid.test.HelloAndroidTest:...INSTRUMENTATION_RESULT: shortMsg=java.lang.NullPointerException
+     [exec] INSTRUMENTATION_RESULT: longMsg=java.lang.NullPointerException
+     [exec] INSTRUMENTATION_CODE: 0
+     [echo] Downloading coverage file into project directory...
+     [echo]   (coverage file = /data/data/com.example.helloandroid/coverage.ec)
+     [exec] 7 KB/s (156 bytes in 0.019s)
+     [echo] Extracting coverage report...
+     [echo] Cleaning up temporary files...
+   [delete] Deleting: /Users/Shared/devel/Android/test_training/Androidchap4Jenkins/HelloAndroidTest/coverage.ec
+   [delete] Deleting: /Users/Shared/devel/Android/test_training/Androidchap4Jenkins/HelloAndroidTest/coverage.em
+     [echo] Saving the report file in /Users/Shared/devel/Android/test_training/Androidchap4Jenkins/HelloAndroidTest/coverage/coverage.xml
+** [ ] JUnitの結果が実機で取得できない
+カスタマイズされたInstrumentationTestRunnerは、テスト結果のファイルを /data/local/tmp/<パッケージ>/TEST-all.xmlに出力する。
+おそらく、/data/local/tmp/ 以下へのアクセス権が無いか、ファイルが消されてしまっているのが原因
+このため、テスト結果のファイルを /sdcard/unittest/<パッケージ>/TEST-all.xml に変更する
+
+ : --- a/src/com/neenbedankt/android/test/InstrumentationTestRunner.java
+ : +++ b/src/com/neenbedankt/android/test/InstrumentationTestRunner.java
+ : @@ -32,13 +32,15 @@ public class InstrumentationTestRunner extends android.test.InstrumentationTestR
+ :      private Writer mWriter;
+ :      private XmlSerializer mTestSuiteSerializer;
+ :      private long mTestStarted;
+ : +    private static final String JUNIT_XML_BASEDIR = File.separator + "sdcard" + File.separator + "unittest";
+ :      private static final String JUNIT_XML_FILE = "TEST-all.xml";
+ :     
+ :     
+ :      @Override
+ :      public void onStart() {
+ :          try {
+ : -            startJUnitOutput(new FileWriter(new File(getTargetContext().getFilesDir(), JUNIT_XML_FILE)));
+ : +            String destDir = JUNIT_XML_BASEDIR + File.separator + getComponentName().getPackageName();
+ : +            startJUnitOutput(new FileWriter(new File(destDir, JUNIT_XML_FILE)));
+ :          } catch (IOException e) {
+ :              throw new RuntimeException(e);
+ :          }
+
+※ 現状、/sdcard/unittest/<パッケージ>/ ディレクトリが無いとエラーになる
+※ 現状、テスト結果の生成先を外部からInsturumentationTestRunnerに指定できるとなお良い
