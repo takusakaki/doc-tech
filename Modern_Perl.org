@@ -1,0 +1,131 @@
+#+TITLE:     モダンPerl入門
+#+LANGUAGE:  jp
+#+OPTIONS:   H:3 num:t toc:t \n:nil @:t ::t |:t ^:t -:t f:t *:t <:t
+#+OPTIONS:   TeX:t LaTeX:t skip:nil d:nil todo:t pri:nil tags:not-in-toc
+#+INFOJS_OPT: view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
+#+EXPORT_SELECT_TAGS: export
+#+EXPORT_EXCLUDE_TAGS: noexport
+#+LINK_UP:   
+#+LINK_HOME: 
+#+XSLT:
+
+* 第1章 近代的なオブジェクト指向
+** 1.2 Class::Accessor::Fast
+
+: use strict;
+: use warnings;
+: use base qw(Class::Accessor::Fast);
+: __PACKAGE__->mk_accessors( qw(aaa bbb ccc) );
+
+ - プロパティ aaa, bbb, ccc へのアクセサが作成される。
+ - コンストラクタnew() へハッシュリファレンスを渡すことで初期化ができる
+　　（例） {aaa=>xxx,bbb=>yyy,ccc=>zzz} 
+
+** 1.3 blessからMooseへ
+- 基本的な記述
+: package EchoServer;
+: use Moose;           <<<<<<<<<<<<
+: 
+: has 'address' => (     <<<<<<<<  (1)
+:     is       => 'rw',
+:     isa      => 'Str',
+:     required => 1,
+: );
+: 
+: has 'port' => (
+:     is       => 'rw',
+:     isa      => 'Int',
+:     required => 1,
+:     default  => 9999,
+: );
+: 
+: has 'server_socket' => (
+:     is       => 'rw',
+:     isa      => 'IO::Socket',
+: );
+: __PACKAGE__->meta->make_immutable;  <<<<<<<  (2)
+: no Moose;                           <<<<<<<
+
+strictとwarningsは自動的に有効になる
+
+ (1)プロパティの宣言
+  has() オブジェクトが保持するプロパティを定義 
+　
+     - is 
+        rw, ro
+     - isa 型
+        Undef以外の型を指定して場合、undef()を代入することはできない
+
+     - required 必須項目
+        コンストラクタかデフォルト値で初期化されない場合例外が投げられる
+
+ (2)
+ - make_immutable  Mooseの根本にあるMeta Object Protocolに関する機能
+                   ランタイム時のMoose関連機能の呼び出しが高速になる
+ - no Moose        Mooseのユーティリティ機能を、実装クラスの名前空間から削除する
+                   これにより、余計な関数が残らないようにする
+
+*** 継承
+: package TimestampedEchoServer;
+: use Moose;
+: extends 'EchoServer';
+
+1) before
+指定したメソッドの前に実行される
+: before 'write_response' => sub {
+:     my $self = shift;
+:     my $client = shift;
+:     my $req = shift;
+:     print $client scalar(localtime), " : ";
+: };
+
+2) override
+オーバーライド
+: override 'write_response' => sub {
+:     my $self = shift;
+:     my $client = shift;
+:     my $req = shift;
+:     print $client scalar(localtime), " : ", $req;
+: };
+
+(参考) Mooseの機能を用いないオーバーライド
+: sub write_response {
+:     my $self = shift;
+:     my $client = shift;
+:     my $req = shift;
+:     print $client scalar(localtime), " : ";
+:     $self->SUPER::write_response($client, $req);
+: }
+
+*** 初期化 (BUILD, BUILDARGS)
+- BUILD
+Mooseを用いる場合、newを定義しても呼ばれない。
+初期化の処理を行う場合は BUILD を定義する。
+BUILDはオブジェクト作成後に呼ばれる。
+: sub BUILD {
+:     my $self = shift;
+:     # 初期化......
+:     return $self;
+: }
+
+- BUILDARGS
+コンストラクタ実行前に呼ばれる。ハッシュリファレンスを返すようにする
+以下のような用途がある。
+ - コンストラクタに渡された引数がハッシュ形式ではない場合、ハッシュに変換する
+ - コンストラクタに引数が未指定の場合、デフォルト値を割り当てるなどの措置
+
+*** デフォルト値
+has()で default属性を割り当てられる。
+リファレンスやオブジェクトをデフォルト値として割り当てる場合は無名関数を指定する。
+
+
+
+
+* 第2章 Perlによるオブジェクトデザインパターン
+* 第3章 データベース処理の薦め
+* 第4章 Webアプリケーション
+* 第5章 Perlによるシステムツールの開発
+* 第6章 テストの薦め
+* 第7章 パフォーマンスチューニング
+* 第8章 知っておきたい C API と XSの書き方
+* 第9章 抑えておきたいPerlの基礎
