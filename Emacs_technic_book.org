@@ -1515,6 +1515,25 @@ make install
 
 
 * その他
+** 拡大/縮小 (Emacs23)
+
+C-x C--  縮小
+C-x C-=
+C-x C-+  拡大
+C-x C-0  リセット
+
+Ctrl + マウスホイールで拡大/縮小
+#+BEGIN_SRC lisp
+;; font size zoom
+(if (and (>= emacs-major-version 23) (window-system))
+    (progn
+      (global-set-key
+       (vector (list 'control mouse-wheel-down-event))
+       'text-scale-increase)
+      (global-set-key
+       (vector (list 'control mouse-wheel-up-event))
+       'text-scale-decrease)))
+#+END_SRC lisp
 ** プロキシ
 .emacs
 : (setq url-proxy-services '(("http" . "proxy.server.com:8080"))) 
@@ -1548,3 +1567,7 @@ http://d.hatena.ne.jp/tamura70/20100220/org
 
 
 
+* TODO
+- FlyMake
+- Perl-completion
+- sql-mode
