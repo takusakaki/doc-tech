@@ -492,6 +492,22 @@ git stashを用いる
 ** TODO megit
 
 
+* repo
+
+- Manifestのname と pathの意味
+  <project path="aaa/bbb/Test" name="test/Test" />
+
+  path はクライアント側でチェックアウトしたときに配置されるパス
+  name はリモート側(gitサーバー)上の位置
+
+    (remote)              (client)
+   test/Test.git/  ---->  aaa/bbb/Test/
+
+- repo abandon
+マージ済みのトピックブランチを削除するコマンドだが、ローカルリポジトリでコミット済みにして
+リモートにプッシュしていない状態で行うと、削除されてしまうことに注意
+
+
 * 資料
 (a) 入門Git
 
