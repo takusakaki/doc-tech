@@ -1,0 +1,102 @@
+* 正規表現
+ 
+** 特殊配列 "@-"と"@+"
+Perl 5.6.0以上
+正規表現によってマッチした先頭と末尾の文字列オフセットを、それぞれ配列"@-"と"@+"に保持する。
+"@-[0]"と"@+[0]"は"$&"の開始位置と終了位置、"@-[1]"と"@+[1]"は"$1"の開始位置と終了位置を保持する。
+
+ 例:
+          0123456789012345
+    $_ = "aaabbbcccdddeee";
+    /aaa(bbb)ccc(ddd)eee/;
+   printf "   %d-%d\n", $-[0], $+[0];  # 0-15
+   printf "1: %d-%d\n", $-[1], $+[1];  # 3-6
+   printf "2: %d-%d\n", $-[2], $+[2];  # 9-12
+
+
+ 参考 http://d.hatena.ne.jp/jitsu102/20091010/1255178191
+      http://perldoc.jp/docs/perl/5.14.1/perlretut.pod
+
+* POD
+
+** コマンドパラグラフ
+*** =pod, =cut
+PODをプログラムの中に埋め込むときに使われます。
+=podから=cutまでを、コンパイラによる解釈を抑止し、フォーマッタにはPODとして認識させます。
+
+*** =head1 ヘッダ, =head2 ヘッダ
+=head1は第1レベルの、=head2は第2レベルのヘッダを出力します。
+
+*** =over 数値, =item テキスト, =back
+=overはリスト項目の開始、=itemはそのリスト項目、backはリストの終了を意味します。
+
+*** =for X,  =begin X, =end X
+それぞれ特定のフォーマッタにだけ渡される部分を指定します。
+=forはそのパラグラフ１つを、=beginと=endはその間のすべてのパラグラフを対象とします。
+
+** シーケンス
+- I<.....>  イタリック
+- B<.....>  ボールド
+- S<.....>  スペースが入っている文字列が分割されることを抑止
+- C<.....>  リテラルコードとして表示
+- L<.....>  リンク
+  L<名前>        他のページ
+  L<"sec">       同じページのセクション
+  L<名前/indent> 他のページのアイテム
+  L<名前/"sec">  他のページのセクション
+
+- F<.....>  ファイル名として表示
+- X<.....>  ?
+- Z<>       幅ゼロの文字
+- E<.....>  エスケープ  (<>の中はHTMLシーケンス、例： E<lt>  E<gt>
+
+
+* デバッグ
+** デバッガ
+
+
+*** {{ v  周辺コードを常に表示する
+参考：http://perl-users.jp/articles/advent-calendar/2011/casual/12
+
+この設定を常に有効にするには、
+
+1) ~/.perldb に指定しておく
+: # デバッガの初期化終了後に呼び出されるサブルーチン
+: sub afterinit {
+:     # @DB::typeaheadにpushしておくと、TTY出力を模倣してくれる
+:     push @DB::typeahead, "{{ v";
+: } 
+
+2) PERLDB_OPTS環境変数 に指定
+
+* 環境
+** Macに Image::Magickをインストール
+   
+*** 概要
+cpanでインストールしようとすると、ヘッダが見つからないなどのエラーが出てしまいうまく行かない。
+以下の手順で行うとうまく行った
+ 1) homebrewでImageMagick本体をインストール
+ 2) 1)でインストールしたImageMagickと同一バージョンのImageMagickのソースをダウンロードする
+ 3) この中にPerlMagick/というディレクトリがありImage::Magickであるのでビルドしてインストールする
+
+(参考) http://d.hatena.ne.jp/cou929_la/20091230/1262154857
+
+***　詳細
+ 1) ImageMagick本体をインンストール
+    sudo brew install imagemagick
+
+ 2) convert -v でバージョン確認
+:    Version: ImageMagick 6.7.7-6 2012-09-18 Q16 http://www.imagemagick.org
+  
+     http://www.imagemagick.org/script/download.php へアクセスし適当なミラーサイトを選択し、
+     legacy へ移動し、上記バージョンに該当する tar.gzをダウンロードする
+
+ 3) PerlMagickをビルド、インストールする
+    $ tar xzf ImageMagick-6.7.7-10.tar.gz
+    $ cd ImageMagick-6.7.7-10/PerlMagick
+    $ perl Makefile.PL
+    $ make
+    $ sudo make install
+
+
+    
