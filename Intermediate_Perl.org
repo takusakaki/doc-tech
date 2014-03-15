@@ -410,6 +410,14 @@ sub bbb {                       ↑Perlコード
 
 
 =====================================================
+** 16-a その他のディストリビューションのひな形を作成するツール
+http://gihyo.jp/dev/serial/01/modern-perl/0025?page=1
+ExtUtils::ModuleMaker
+ExtUtils::ModuleMaker::TT
+Module::Starter
+*Module::Setup*  http://perl-users.jp/articles/advent-calendar/2009/hacker/19.html
+
+
 * 17. 基本的なテスト
 - Test::More
 Test::Moreは、Perl 5.8以降は標準ディストリビューションに添付されている

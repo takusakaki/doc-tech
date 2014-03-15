@@ -50,6 +50,10 @@ PODをプログラムの中に埋め込むときに使われます。
 - Z<>       幅ゼロの文字
 - E<.....>  エスケープ  (<>の中はHTMLシーケンス、例： E<lt>  E<gt>
 
+* テスト
+** Test::Base
+http://gihyo.jp/dev/feature/01/test-perl/0002?page=1
+Data Driven Testing Framework（データ駆動型テストフレームワーク）
 
 * デバッグ
 ** デバッガ

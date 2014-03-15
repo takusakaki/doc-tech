@@ -686,7 +686,7 @@ install && .emacs
 
 * Chapter09 外部プログラム
 ** [#A] シェルコマンドの実行 [9.3]
-   : M-!   (shell-command) シェルコマンドを実行
+: M-!   (shell-command) シェルコマンドを実行
 : C-u M-!               結果をカレントバッファに挿入
 :
 : M-|   (shell-command-on-region) リージョンの内容を標準入力にして実行
@@ -1538,6 +1538,16 @@ Ctrl + マウスホイールで拡大/縮小
 .emacs
 : (setq url-proxy-services '(("http" . "proxy.server.com:8080"))) 
 認証が必要な環境ではネットワークアクセス時に問い合わせがくる
+
+** Buffer Menu
+*** sort
+http://www.emacswiki.org/emacs/BufferMenuSorting
+
+‘M-2 M-x Buffer-menu-sort’    Sort by buffer name.
+‘M-3 M-x Buffer-menu-sort’    Sort by buffer size (ascending).
+‘M-4 M-x Buffer-menu-sort’    Sort by buffer mode name.
+‘M-5 M-x Buffer-menu-sort’    Sort by buffer file name.
+‘M-x Buffer-menu-sort’        Sort by display time (default).
 
 ** Meadow
 *** 自動読み込み

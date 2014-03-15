@@ -1,0 +1,262 @@
+#+TITLE:     モダンPerl入門
+#+DATE:      2014-03-15 Sat
+#+DESCRIPTION:
+#+KEYWORDS:
+#+LANGUAGE:  en
+#+OPTIONS:   H:3 num:t toc:t \n:nil @:t ::t |:t ^:t -:t f:t *:t <:t
+#+OPTIONS:   TeX:t LaTeX:t skip:nil d:nil todo:t pri:nil tags:not-in-toc
+#+INFOJS_OPT: view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
+#+EXPORT_SELECT_TAGS: export
+#+EXPORT_EXCLUDE_TAGS: noexport
+#+LINK_UP:   
+#+LINK_HOME: 
+#+XSLT:
+
+* 第１章　近代的なオブジェクト指向
+** 1.2 Class::Accessor::Fast
+
+: Package ○○○;
+: use strict;
+: use warnings;
+: use base qw(Class::Accessor::Fast);
+: 
+: __PACKAGE__->mk_accessors( qw( aaa bbb ccc ) );
+
+ - new()メソッドは自動的に定義される
+ - new()へハッシュリファレンスを渡すことでオブジェクトの初期化が可能
+
+** 1.3 bless から Mooseへ
+*** Moose
+
+: package ○○○;
+: use Moose;
+:  
+: extends '△△△';     # 継承する親クラスを宣言
+:
+: has 'address' => {    # プロパティの定義
+:   is       => 'rw',   # rw 読み書き, ro 読み込みのみ
+:   isa      => 'Str'   #
+:   required => 1,      # 必須オプション、コンストラクタやデフォルト値で初期化されないと例外を発生
+: };
+: has '+name' => {       # 親クラスのプロパティを上書き
+:   isa => 'HumanName',
+: };
+
+- use strict と usw warnings はMooseから呼び出される
+- __PACKAGE__->meta-> make_immutable ランタイム時のMoose関連の関数の呼び出しが高速になる
+- no Moose       対象の名前空間(○○○)からMooseの関数を削除
+
+
+**** methods
+ - before
+ - override
+ - around   スーパークラスに渡す引数を変更（beforeやoverrideでは引数の内容は変更できない）
+
+**** 型 (isa)
+ Item
+   Bool
+   Maybe[`a]   .... 型が <`a> か undefであればよい
+   Undef
+   Defined
+     Value
+       Num
+         Int
+       Str
+         ClassName
+     Ref
+       ScalarRef
+       ArrayRef[`a] 
+       HashRef[`a] 
+       CodeRef
+       RegexpRef
+       GlogRef
+         FileHandle
+       Object
+         Role
+
+ * [`a]  Parameterized Type ... 中身の型を指定可能
+
+**** 例
+: package ○○○;
+: use Moose;
+: 
+: extends '△△△';
+:
+: has 'address' => {    # プロパティの定義
+:   is       => 'rw',   # rw 読み書き, ro 読み込みのみ
+:   isa      => 'Str'   #
+:   required => 1,
+: };
+:
+: has 'port' => {
+:   is       => 'rw',
+:   isa      => 'Int',
+:   required => 1,
+:   default  => 9999,
+: };
+: 
+: before 'xxxxx' => sub {    # xxxxx()の前に実行
+:     my ($self, $a, $b) = @_;
+:     print "xxxxx will be called\n";
+: };
+:
+: override 'yyyyy' => sub {  # オーバーライド
+:     my ($self, $a, $b) = @_;
+:     print "super will be called\n";
+:     super();
+: };
+:
+: around 'zzzzz' => sub {  # 変数を変更して zzzzz()を呼び出し
+:     my ($next, $self, $a, $b) = @_;    # $next はスーパークラスの同名関数を指す無名関数
+:     $a ++;
+:     $b *= 2;
+:     $next->($self, $a, $b);
+: };
+:
+: 
+: __PACKAGE__ -> meta -> make_immutable;
+: no Moose;
+
+*** 初期化（BUILD, BUILDARGS）
+Mooseは初期化をnewでは行わない（内部的に Class::MOP::Class の new_object()で行われる）
+
+- BUILD()
+コンストラクタの後(オブジェクトが作成された後)に呼ばれる。
+
+- BUILDARGS() 
+コンストラクタの前に呼ばれる。ハッシュリファレンスをreturnするとコンストラクタに渡される。
+
+
+
+*** デフォルト値の設定（遅延評価）
+デフォルト値を動的に他の変数に依存して指定する場合、依存する変数が未指定である場合などはうまくいかない
+これを回避するため、遅延評価を行うようにする
+
+**** 方法1) lazy, builder
+lazy オプションで遅延評価を指定し、 default オプションの代わりにbuilderオプションを指定する
+これにより実際にアクセスされるまで、この変数の評価は保留される
+※ コンストラクタで初期化していた場合、builderで指定した関数は呼ばれない
+
+例)
+: has 'server_socket' => (
+:   is      => 'rw',
+:   isa     => 'IO::Socket',
+:   lazy    => 1,               # 遅延評価の指定
+:   builder => 'build_socket'   # 初期化関数
+: );
+: sub build_socket {
+:     my $self = shift;
+:     IO::Socket::INET->new(
+:         Listen => 5,
+:         LocalAddr => $self->address,   <<<< これらの変数の状態に依存する
+:         LocalPort => $self->port,      <<<< 
+:         Prot      => 'tcp',
+:     );
+: }
+
+**** 方法2) lazy_build
+lazy_buildオプションを指定すると  *_build_プロパティ名* という名前のメソッドが自動的に実行される
+
+例)
+: has 'server_socket' => (
+:   is      => 'rw',
+:   isa     => 'IO::Socket',
+:   lazy_build => 1,            <<<<<<<<<<<<
+: );
+: sub _build_server_socket {    <<<<<<<<<<<<
+:     my $self = shift;
+:     IO::Socket::INET->new(
+:         Listen => 5,
+:         LocalAddr => $self->address,
+:         LocalPort => $self->port,
+:         Prot      => 'tcp',
+:     );
+: }
+
+
+*** カスタム型 (subtype)
+_Moose::Util::TypeConstraints_ を用いてカスタム型を定義
+ - where で評価式を定義
+ - messageで異常発生時のメッセージを定義
+
+ - 定義後は /no .../  でクリーンアップしておいた方が良い 
+ - coerce で型に一致しない場合のルールを定義することも可能 *（詳細略）*
+ - MooseX::Typese::* に関連モジュールあり
+
+**** 例
+: use Moose::Util::TypeConstraints;
+: 
+: subtype 'MyNum::MultipleOfThree'    # カスタム型の定義
+:     => as 'Int'
+:     => where {$_ % 3 == 0}
+:     => message {"This number ($_) is not dividable by three!"}
+: ;
+:
+: has 'num3' => (                     # カスタム型を型に指定したプロパティ
+:     is => 'rw',
+:     isa=>'MyNum::MultipleOfThree'
+: );
+: 
+: no Moose::Util::TypeConstraints;
+
+** 1.4 オブジェクトのロール
+*** Role
+Role では「役割」を定義する
+  Class --> 「AはBである」
+  Role  --> 「AはBができる」
+
+Roleの宣言
+: package Winged;
+: use Moose::Role;
+: requires qw(fly open_wing close_wing );
+
+Roleを変数の型とするには、hasメソッド内の 'does' でRoleを指定する (クラスに対する 'isa'の代わりに)
+
+**** 例
+: package Winged;    # Role の定義
+: use Moose::Role;   # fly の実装を要求
+: requires 'fly';
+: 
+: package Bird;      # Roleを実装したクラス(１)
+: use Moose;
+: extends 'Animal';
+: with 'Winged';     # Role Winged を宣言
+: sub fly { ... }    # Roleに要求されているメソッドを実装
+: 
+: package Bat;       # Roleを実装したクラス(２)
+: use Moose;
+: extends 'Mammal';
+: with 'Winged';
+: sub fly { ... }
+: 
+: #---
+: package Main;
+: use Moose;
+: 
+: has => (
+:   is   => 'rw',
+:   does => 'Winged'   # Roleを指定
+: );
+
+** 1.5 Moose の問題点
+Mooseは大規模なフレームワークであるため、読み込むのにオーバーヘッドがかかる
+ Mouse      軽量版 Moose
+ Squirrel   ロード時にすでにMooseがロードされていたらMooseとして振る舞い，MooseがいなければMouseを呼び出してMouseとして振る舞う
+ Any::Moose  http://gihyo.jp/dev/serial/01/modern-perl/0004?page=3
+
+
+(参考)
+- http://gihyo.jp/dev/serial/01/modern-perl/0004
+
+** その他の資料
+- http://perldoc.jp/docs/modules/Moose/Manual.pod
+
+* 第２章　Perlによるオブジェクトデザインパターン
+* 第３章　データベース処理の薦め
+* 第４章　Webアプリケーション
+* 第５章　Perlによるシステムツールの開発
+* 第６章　テストの薦め
+* 第７章　パフォーマンスチューニング
+* 第８章　知っておきたい C API と XS の書き方
+* 第９章　押さえておきたいPerlの基礎
+
