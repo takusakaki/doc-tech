@@ -251,7 +251,49 @@ Mooseは大規模なフレームワークであるため、読み込むのにオ
 ** その他の資料
 - http://perldoc.jp/docs/modules/Moose/Manual.pod
 
+Mooseの中の人によるMoose研修が素晴らしすぎる http://blog.eorzea.asia/2009/09/post_65.html
+Moose::Manual::BestPractices  http://perldoc.jp/docs/modules/Moose/Manual/BestPractices.pod
+Moose　アトリビュート  http://d.hatena.ne.jp/toku_bass/20111023/1319359604
+
 * 第２章　Perlによるオブジェクトデザインパターン
+** +MooseX::AttributeHelpers+  (deprecated)                         :ARCHIVE:
+ *perodocでこのモジュールを見ると dprecated とされている*
+     This distribution is deprecated. The features it provides have been
+     added to the Moose core code as Moose::Meta::Attribute::Native. This
+     distribution should not be used by any new code.
+
+アトリビュートの metaclassに型を指定し、providesで関数を指定する
+: package MyObj;
+: use v5.12;
+: use Moose;
+: use MooseX::AttributeHelpers;
+: 
+: # attributes
+: 
+: has 'list' => (
+:     metaclass => 'Collection::Array',
+:     is   => 'rw',
+:     isa  => 'ArrayRef',
+:     default  => sub { [] },
+:     provides => {
+:         push => 'push_list',
+:         pop  => 'pop_list',
+:     },
+: );
+: 
+: __PACKAGE__ -> meta -> make_immutable;
+: no Moose;
+: 
+: # implements here
+: package main;
+: 
+: my $obj = MyObj->new;
+: $obj->push_list('abc');
+: say $obj->pop_list();
+: 
+: 1;
+: 
+
 * 第３章　データベース処理の薦め
 * 第４章　Webアプリケーション
 * 第５章　Perlによるシステムツールの開発
