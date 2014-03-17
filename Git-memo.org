@@ -24,18 +24,18 @@ git reset <path>  インデックスの変更をもとに戻す
 git reset HEAD^   最後のコミットオブジェクトを削除する
 git reset --hard HEAD^   最後のコミットオブジェクトを削除し、変更内容も取り消す
 ** git diff
-: git diff        変更点を確認（インデックス<-->ワークツリー）
-: git diff HEAD   変更点を確認（HEAD<-->ワークツリー）
-: git diff --cached [コミットオブジェクト(省略時はHEAD)] インデックスからの変更点を確認 (HEAD<-->インデックス)
+git diff        変更点を確認（インデックス<-->ワークツリー）
+git diff HEAD   変更点を確認（HEAD<-->ワークツリー）
+git diff --cached [コミットオブジェクト(省略時はHEAD)] インデックスからの変更点を確認 (HEAD<-->インデックス)
 
-:  HEAD <-- インデックス <-- ワークツリー
+  HEAD <-- インデックス <-- ワークツリー
 
-   git diff          はワークツリーとの差分を表示する。引数を省略した場合、比較相手はインデックスになる
-   git diff --cached はインデックスとの差分を表示する。引数を省略した場合、比較相手はHEADになる
+  git diff          はワークツリーとの差分を表示する。引数を省略した場合、比較相手はインデックスになる
+  git diff --cached はインデックスとの差分を表示する。引数を省略した場合、比較相手はHEADになる
 
 
-: git diff --decorate    コミットIDの箇所に、ブランチ名とタグ名が追加表示される
-: (e.g.)
+git diff --decorate    コミットIDの箇所に、ブランチ名とタグ名が追加表示される
+ (e.g.)
   73ade0eb0b4dab6a4f79082e939c34f552a9db56 _(tag: refs/tags/release_7.01e)_
 
 git diff --name-only HEAD^ HEAD       git diffをファイル名だけ確認する
@@ -129,7 +129,7 @@ git remote add  <リモート名> <リポジトリ>  リモートリポジトリ
 git remote                              リモート名の一覧を表示
 git remote -v                           リモート名の一覧にURLを付加して表示
 git remote show <リモート名>              リモートの詳細を表示
-   git remote show origin   git URLを確認する 
+git remote show origin   git URLを確認する 
 git remote rename <リモート名(変更前)> <リモート名(変更後)>  リモート名を変更
 git remote rm <リモート名>                リモートを削除
 
@@ -181,6 +181,11 @@ git branch --contains <rev>    指定した変更が含まれているブラン�
 
 ** git show-branch
  $ git show-branch --all | less
+
+ $ git show-branch --sha1-name --more=10 <rev-1> <rev-2>
+     --sha1-name  sha1で表示 ('master~2' のような名称ではなく)
+     --more=<n>   分岐点以前の表示数を指定
+
 
 ** git merge
 git merge <マージ元ブランチ>     マージ（マージ先のブランチで実行）
@@ -317,7 +322,72 @@ foreach (`git log --pretty=oneline`) {
 #+END_SRC
 
 
+sha1を含む出力をパイプ経由で name-rev --stdinに渡すと、sha1の箇所を補足してくれる
+abbrevなsha1では駄目な模様
+   例)  $ git log  --pretty="%H" | git name-rev --stdin
+
+** git ls-files
+git ls-files
+git ls-files -u[--unmerged]  作業ツリー中の未マージのファイルを表示
+git ls-files -s              全てのステージの全てのファイルを表示
+
+ -uオプション指定時の出力
+: 100644 263414f423d0e4d70dae8fe53fa34614ff3e2860 1       hello.c
+: 100644 06fa6a24256dc7e560efa5687fa84b51f0263c3a 2       hello.c
+: 100644 cc44c73eb783565da5831b4d820c962954019b69 3       hello.c
+  "blobのモードビット blobのSHA-1 Stage番号 ファイル名"
+     Stage番号 1=マージ起点, 2=ourバージョン, 3=theirバージョン, 0=競合していないファイル
+
+ (参考) http://www8.atwiki.jp/git_jp/pub/git-manual-jp/Documentation/chunked/ch09s05.html
+
+
+** git reflog
+HEADの遷移を見る。 git-reset でHEADを移動する場所を特定する際などに用いる
+
+
+
+* git コマンド _(要調査)_
+
+** git read-tree
+
+
+
+* Gerrit
+
+** プロジェクトの登録
+
+ssh -p 29418   takuya.x.sakakibara@10.158.105.125 gerrit create-project --empty-commit --name MyProject
+      (ポート)  (ユーザ名)          (ホスト)                                                   (プロジェクト名)
+
+** 一般的なworkflow
+■取得
+$ git clone git://review.sonyericsson.net/platform/vendor/semc/verification/se-monkey-runner
+
+■コミット
+$ git add
+$ git commit
+$ git fetch
+$ git rebase origin/master
+$ git push ssh://takahiro.okada@review.sonyericsson.net:29418/platform/vendor/semc/verification/se-monkey-runner HEAD:refs/for/master
+Gerrit 上でVerify + Code review -> submit
+
+
 * UseCase
+** 共有リポジトリの作成
+サーバ等でベアリポジトリを作成
+ :  $ mkdir repo.git
+ :  $ cd repo.git
+ :  $ sudo git init --bare --shared=true
+
+ローカルマシンでローカルリポジトリにコミット後 push
+ :  $ git init
+ :  $ git add .
+ :  $ git commit -m "initial import"
+ : 
+ :  $ git remote add origin ssh://xxxxxxxxxx/yyy/zzz/repo.git 
+ :  $ git push origin master
+
+
 ** 変更の一部分をコミットする
 変更内容の意味ごとにコミットを分割するために行う
  - ファイル内のコミットする箇所を指定   git add -p[--patch]
@@ -354,6 +424,15 @@ git push
  「どこに」と「なにを」を省略
   git clone で作ったリポジトリではデフォルトで、cloneしてきたリポジトリに対して、
   双方のリポジトリで共有しているブランチを全て転送する
+
+** 変更の追跡
+ - git-blame
+  追加変更を行った箇所は検出できるが、 削除変更を行ったコミットは検出できない
+
+ - git-log -S <XXXXX> (pickaxe) 
+  同内容の行が複数箇所にある場合、コミットを一意に特定できない
+  また、追加部分のコミットを pickaxeで抽出した物と
+  git-blameで抽出したものを比較したところ一致しないため、精査が必要。
 
 
 ** 差分に関連するコミットIDを取得 (diffとblameの組み合わせ)
@@ -437,6 +516,64 @@ b219690f0554adfe5fa2d2aebf8c0b08b1d04859 81) (declare-function org-list-get-list
 ** 変更作業中に、他のブランチに移動して別件の処理を行う
 git stashを用いる
 
+** リモートブランチの削除
+git push [remotename] :[branch] 
+
+** コンフリクトが発生したときのワークフロー
+*** 発生箇所の確認
+1)
+: $ git ls-files -u [<path>]  
+
+この結果は以下のように表示される。（詳細は上記の ls-filesの説明を参照)
+これらは3点マージの元になる差分を表している (http://www8.atwiki.jp/git_jp/pub/git-manual-jp/Documentation/chunked/ch03s08.html)
+: 100644 6c3f3de7e111540843b48d1444a06bfe8ec01b4f 1       res/values-fr/strings.xml    # 両方のブランチの共通の祖先のファイル
+: 100644 f063a6f64b135c14641fecbd28fe7167e5e2ee6c 2       res/values-fr/strings.xml    # HEADにあるバージョン
+: 100644 dc91dd9ba47c35bdf4461e9323b062a55ae802b7 3       res/values-fr/strings.xml    # MERGE_HEADにあるバージョン
+
+2)
+: $ git status [<path>]  
+
+3)
+: $ git diff    
+
+*** 修正
+1) エディタなどで手動で編集
+: (edit <path>)
+: $git add <path>
+
+2) mergetoolを使用  -yでデフォルトのツールが起動  -t <tool> で指定したツールが起動
+: $git mergetool -y [<path>]
+
+3) <path>をHEADと同じ状態にする。
+: $ git checkout --ours [<path>]
+: $ git add <path>
+
+4) <path>をマージで指定したブランチと同じ状態にする。
+: $ git checkout --theirs [<path>]
+: $ git add <path>
+
+修正した後(indexの更新前に)、git diffを行うと　diffの差分箇所の先頭にある -と+のマークが2列に増え、
+左側(先頭) にある記号は1つ目の親に対する差分を表し、右側(2番目) にある記号は2つ目の親に対する差分を表す。
+双方に記号がある場合(++)は、両方の親に存在せず新たに追加したことを示す。
+
+
+
+** 特定のリビジョンのファイルの内容
+git cat-file -p <SHA1 object name>:<path>
+or
+git show <SHA1 object name>:<path>
+
+** リポジトリ全体のdiff
+(HEADまでの全ての変更を git-diff形式で出力)
+ git diff-tree -p 4b825dc642cb6eb9a060e54bf8d69288fbee4904 HEAD
+
+この 4b825dc は "empty tree" というものを表しており、
+ git hash-object -t tree /dev/null 
+で求まる
+
+ ※git diff <initial commit>..HEAD だと <initial commit>の変更分が
+　 除かれてしまう
+
 
 * Trobule
 ** git push で "insufficient permission for adding an object to repository database ./objects" というエラーが出る
@@ -486,6 +623,9 @@ git stashを用いる
 
 
 * Tool
+** gitk と git-gui のフォントを変更する
+http://transitive.info/article/git/tips/gui/
+
 ** gitsum.el  (git add --patch を行う Emacs lisp ?)
   http://chneukirchen.org/blog/archive/2008/02/introducing-gitsum.html
 
@@ -530,3 +670,5 @@ rebase  開発ブランチに、メインブランチの変更を反映すると
 
          main  **abc     --->  **abc-xyz
          devel  +xyz           
+
+

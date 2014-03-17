@@ -1,0 +1,19 @@
+
+
+変数の値
+M-x describe-variable
+
+
+load-path
+(add-to-list 'load-path "~/mule/lisp/ak/lisp")
+
+
+どの*.elで定義されているか？
+M-x locate-library
+
+
+評価
+- *scratch* バッファ　
+　行末で C-j
+- eval-region
+- C-x C-e

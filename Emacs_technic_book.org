@@ -372,6 +372,7 @@ windmove で、shift + カーソルキーにより移動できるようになる
 
 *** TODO Emacs標準の矩形処理
 (参考)http://www.bookshelf.jp/soft/meadow_32.html#SEC462
+      http://tech.kayac.com/archive/emacs-rectangle.html
 
 #+BEGIN_EXAMPLE
 C-x r k : 矩形領域を切り取る (kill-rectangle)
@@ -379,6 +380,11 @@ C-x r o : 矩形領域だけスペースを確保する (open-rectangle)
 C-x r c : 矩形領域を消去する．スペースは確保． (clear-rectangle)
 C-x r d : 矩形領域を消去する．スペースも消す． (delete-rectangle)
 C-x r t : 矩形領域を文字で置き変える (string-rectangle)
+C-x r y	: キルリングの矩形領域を貼り付ける           yank-rectangle	    
+C-x r r	: レジスターに矩形領域を登録する	     copy-rectangle-to-register
+C-x r i	: レジスターに登録された矩形領域を貼り付ける insert-register	    
+
+
 #+END_EXAMPLE
 
 ** M-/  バッファから単語を補完 [6.4]
@@ -779,6 +785,22 @@ EUC-JPで渡し、UTF-8に戻すことで対応できる
 : Parenthesis group to modify (justify if negative): 1 <正規表現のどのカッコにマッチする部分を修正するか？
 : Amount of spacing (or column if negative): 1         <桁揃えで開けるスペースの数
 : Repeat throughout line? (y/n)                        <行の後ろの部分にわたって繰り返すか？
+** 文字数で改行
+http://flex.ee.uec.ac.jp/texi/emacs-jp/emacs-jp_121.html
+
+1) 折り返し幅を設定
+: C-x f   set-fill-column
+: 80
+
+2) 折り返し(region)
+: (region 選択)
+: M-x fill-region   (デフォルトでは M-gにアサイン)
+
+　 折り返し(paragraph)
+: M-x fill-paragraph   (M-q)
+
+ ※ 1～2行目は  M-80 ---> C-x f  でも同じ
+
 * Chapter11 view-mode
 
 ** view-mode [11.1~11.2]
@@ -963,8 +985,7 @@ anythingでしおりをリストすることができる
 Exuberant Ctags:
 http://ctags.sourceforge.net/
 
-これは古いかもしれない
-: ctags -e ファイル名 ...   TAGSファイルを作成
+: ctags -e ファイル名 ...   TAGSファイルを作成 (-eでemacsのetagsモード用のタグファイルを生成)
 : ctags -e *              カレントディレクトリすべてを対象
 : ctags -e **/*           サブディレクトリも対象
 :
@@ -1056,6 +1077,7 @@ ctagsで用いる標準のキーバインドが置き換わる(M-. と M-*)
 
 * Chapter14 org-mode
   http://orgmode.org/
+  https://raw.github.com/takaishi/orgmode/master/orgcard.ja.txt
 ** インストール
 http://orgmode.org/ からダウンロード
 :  $ unzip org-6.34c.zip
@@ -1173,6 +1195,11 @@ Export時に、下付きを無効にする場合は 出力オプション("#+OPT
 タイトルはセンタリング 
 #+END_CENTER
 
+*** 優先度
+S-↑/↓
+or
+C-c ,
+ 
 ** そのまま出力 [14.11]
 行頭を : で始める
 あるいは
@@ -1253,6 +1280,8 @@ TBLFM の行で C-c C-c 全行に計算式を適用
 | vmedian(範囲) | データのメジアン(中央値) |
 
 
+*** HTML表のスタイル設定
+   http://d.hatena.ne.jp/tamura70/20100307/org
 
 *** (不明なこと)
  - "|"文字を表の中に記述するには？
@@ -1381,7 +1410,13 @@ TODO のキーワードは org-todo-keywords変数で設定する
 
 *** タグを検索
 : C-c / T   org-sparse-trees T     タグを検索
+: C-\       タグを検索
+: C-u C-\   TODOでない項目を無視
+: C-c a m   すべてのアジェンダのファイルから検索
+: C-c a M   すべてのアジェンダのファイルから検索、TODOのみ
 C-c C-c でハイライトを消せる
+
+(参考)http://hpcgi1.nifty.com/spen/index.cgi?OrgMode%2fManual3#i3
 
 ** [#A] org-agenda [14.14]
 
@@ -1398,9 +1433,9 @@ C-c C-c でハイライトを消せる
 :     (900 1000 1100 1200 1300 1400 1500 1600 1700)))
 
 Agendaの種別
-: C-a a   カレンダー形式 
-: C-a t   TODO
-: C-a m   タグ
+: C-c a   カレンダー形式 
+: C-c t   TODO
+: C-c m   タグ
 : 
 
 
@@ -1432,6 +1467,18 @@ Agendaの種別
 :  O  org-agenda-clock-out 計時を終了
 :
 :  q 終了 
+
+** 列表示 (org-columns)
+org-columns  C-c C-x C-c
+  Turn on column view on an org-mode file.
+
+org-columns-quit    ----
+  Remove the column overlays and in this way exit column editing.
+   >>>>   (global-set-key (kbd "C-c C-x C-q") 'org-columns-quit)
+
+
+
+http://d.hatena.ne.jp/tamura70/20100208/org
 
 ** エクスポート [14.15]
 : C-c C-e   (org-export) エクスポート形式選択
@@ -1482,10 +1529,20 @@ org-export-* で調べられる。Ascii, HTML, xoxo(?), iCalendar形式でエク
    :END:
 
 ** アーカイブ
- | C-c C-x C-s または C-$ | 　　　　アーカイブファイルに移動する　（<元ファイル名>_archive) |
- | C-c C-x a              | ARCHIVEタグを付ける/外す                                        |
- | C-c C-x A              | "Archive"子見出しに移動する                                     |
- | C-TAB                  | ARCHIVEタグの付いた見出しを開く                                 |
+いくつかの方法がある
+  別ファイルにアーカイブする      C-c C-x C-s
+
+  同一ファイルにアーカイブする    C-c C-x a
+    (ARCHIVEタグを付ける)
+
+  同一ファイルにアーカイブする    C-c C-x A
+    (見出し "* Archive" の下に移動する)
+  
+
+ | C-c C-x C-s または C-$ | 別ファイルのアーカイブファイルに移動する　（<元ファイル名>_archive) |
+ | C-c C-x a              | ARCHIVEタグを付ける/外す                                            |
+ | C-c C-x A              | "Archive"子見出しに移動する                                         |
+ | C-TAB                  | ARCHIVEタグの付いた見出しを開く (通常のTABでは開かない）            |
 
 ** エクスポートのオプション
 http://d.hatena.ne.jp/tamura70/20100304/org
@@ -1567,6 +1624,8 @@ howmが(自動的に)有効になっているのが理由らしい
 
 参考：http://d.hatena.ne.jp/fu7mu4/20091203/1260017861
 
+** 行間
+(setq line-spacing 0.3)
 * リンク
 http://hpcgi1.nifty.com/spen/index.cgi?OrgMode/Manual
 http://d.hatena.ne.jp/tamura70/20100220/org

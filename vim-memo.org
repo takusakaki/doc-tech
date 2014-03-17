@@ -1,0 +1,9 @@
+** 検索結果のハイライト
+
+検索結果をハイライトし、Esc連打でハイライトを消す。
+
+~/.vimrc
+#+BEGIN_SRC sh_mode
+set hlsearch
+nmap <Esc><Esc> :nohlsearch<CR><Esc>
+#+END_SRC
