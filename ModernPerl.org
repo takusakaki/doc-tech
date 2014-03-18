@@ -33,17 +33,20 @@
 :  
 : extends '△△△';     # 継承する親クラスを宣言
 :
-: has 'address' => {    # プロパティの定義
+: has 'address' => (    # プロパティの定義
 :   is       => 'rw',   # rw 読み書き, ro 読み込みのみ
-:   isa      => 'Str'   #
+:   isa      => 'Str',  #
 :   required => 1,      # 必須オプション、コンストラクタやデフォルト値で初期化されないと例外を発生
-: };
-: has '+name' => {       # 親クラスのプロパティを上書き
+: );
+: has '+name' => (       # 親クラスのプロパティを上書き
 :   isa => 'HumanName',
-: };
+: );
+: __PACKAGE__->meta-> make_immutable;
+: no Moose;
+
 
 - use strict と usw warnings はMooseから呼び出される
-- __PACKAGE__->meta-> make_immutable ランタイム時のMoose関連の関数の呼び出しが高速になる
+- __PACKAGE__->meta->make_immutable   ランタイム時のMoose関連の関数の呼び出しが高速になる
 - no Moose       対象の名前空間(○○○)からMooseの関数を削除
 
 
@@ -53,26 +56,26 @@
  - around   スーパークラスに渡す引数を変更（beforeやoverrideでは引数の内容は変更できない）
 
 **** 型 (isa)
- Item
-   Bool
-   Maybe[`a]   .... 型が <`a> か undefであればよい
-   Undef
-   Defined
-     Value
-       Num
-         Int
-       Str
-         ClassName
-     Ref
-       ScalarRef
-       ArrayRef[`a] 
-       HashRef[`a] 
-       CodeRef
-       RegexpRef
-       GlogRef
-         FileHandle
-       Object
-         Role
+: Item
+:   Bool
+:   Maybe[`a]   .... 型が <`a> か undefであればよい
+:   Undef
+:   Defined
+:     Value
+:       Num
+:         Int
+:       Str
+:         ClassName
+:     Ref
+:       ScalarRef
+:       ArrayRef[`a] 
+:       HashRef[`a] 
+:       CodeRef
+:       RegexpRef
+:       GlogRef
+:         FileHandle
+:       Object
+:         Role
 
  * [`a]  Parameterized Type ... 中身の型を指定可能
 
@@ -82,18 +85,18 @@
 : 
 : extends '△△△';
 :
-: has 'address' => {    # プロパティの定義
+: has 'address' => (    # プロパティの定義
 :   is       => 'rw',   # rw 読み書き, ro 読み込みのみ
 :   isa      => 'Str'   #
 :   required => 1,
-: };
+: );
 :
-: has 'port' => {
+: has 'port' => (
 :   is       => 'rw',
 :   isa      => 'Int',
 :   required => 1,
 :   default  => 9999,
-: };
+: );
 : 
 : before 'xxxxx' => sub {    # xxxxx()の前に実行
 :     my ($self, $a, $b) = @_;
@@ -113,7 +116,6 @@
 :     $next->($self, $a, $b);
 : };
 :
-: 
 : __PACKAGE__ -> meta -> make_immutable;
 : no Moose;
 
@@ -179,7 +181,7 @@ _Moose::Util::TypeConstraints_ を用いてカスタム型を定義
  - where で評価式を定義
  - messageで異常発生時のメッセージを定義
 
- - 定義後は /no .../  でクリーンアップしておいた方が良い 
+ - 定義後は /no .../  で Moose::Util::TypeConstraints をクリーンアップしておいた方が良い 
  - coerce で型に一致しない場合のルールを定義することも可能 *（詳細略）*
  - MooseX::Typese::* に関連モジュールあり
 
