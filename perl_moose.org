@@ -280,7 +280,7 @@ MooseX::AttributeHelpers と同様な機能
           add_item  => 'push',
           next_item => 'shift',
       },
-  )
+  );
 
   Arrayトレートを traitsに指定することにより、MooseにArrayにまつわるヘルパーを
   使用したいということを伝える。
@@ -291,8 +291,333 @@ Array, Hash, Bool, String, Number, Counter など
 詳細は Moose::Meta::Attribute::Native
 
 
-** カリー化
+** カリー化 (TBD)
 
   *TBD*
 
-* Moose::Manual::Construction <<<<<<<<<<<<<<<<<
+* Moose::Manual::Construction
+
+** BUILDARGS
+newの前に呼ばれる。
+
+e.g.) newに hash, hashref ではなく単純な値を引数に渡す
+
+  around BUILDARGS => sub {
+      my $orig = shift;    # オリジナルのメソッド(親クラス(Moose::Object)の BUILDARGS)
+      my $class = shift;   # クラス名
+  
+      if ( @_ == 1 && ! ref $_[0] ) {      # 残りの引数の数が1 かつリファレンスでない場合、この場でハッシュを作成する
+          return $class->$orig( ssn => $_[0] );
+      }
+      else {                               # それ以外の場合はそのまま引数を渡して通常通り処理する
+          return $class->$orig(@_);
+      }
+  };
+
+  $class->$orig() でクラスTの親クラスのBUILDARGSを呼ぶ
+  これはhashとhashrefを区別してくれる
+
+** BUILD
+newの後、オブジェクトが生成された後に呼ばれる
+例えばオブジェクトの状態をチェックしたりすることに用いる
+
+  sub BUILD {
+      my $self = shift;
+
+      if ( $self->........ eq '....' ) {
+          die '.............'
+              unless $self->......;
+      }
+  }
+
+** BUILDと親クラス
+Mooseはクラス階層にある全てのBUILDメソッドを _親から子の順番で_ 呼ぶ
+
+** オブジェクトの破棄 (DEMOLISH)
+オブジェクトを破棄するときに呼ばれる
+
+* Moose::Manual::MethodModifiers
+
+** メソッドモディファイアとは
+
+before 'foo' => sub {.....};
+after 'foo' => sub {.....};
+around 'foo' => sub {
+    my $orig = shift;
+    my $self = shift;
+    ..................
+    $self->$orig(@_);    # foo()を呼ぶ（これを行わないと foo()は呼ばれない）
+    ..................
+};
+
+同種のモディファイアを複数定義した場合は最後に追加されたものから実行される。
+メソッドモディファイアはいずれもPerlの関数として実装されているので、モディファイアの宣言はかならずセミコロンで終えなければなりません。
+
+
+** before、after、around
+使用例
+- ロールで定義したメソッドの振る舞いを、実装したクラスで変更する
+- 振る舞いを追加する
+- 事前チェックを行う (before)
+- 実行結果のログを取る (after)
+- 引数を変更、'呼ばない' 選択を取る、返り値を変更　(around)
+
+** inner と argument
+
+実装の一部をサブクラスで行うようにする
+ package S;
+ use Moose;
+ 
+ sub foo {
+     print "S foo -1\n";
+     inner();
+     print "S foo -2\n";
+ }
+ 
+ package C;
+ use Moose; extends 'S';
+ 
+ augment 'foo' => sub {
+     print "C foo\n";
+ };
+ 
+ package main;
+ 
+ my $c = C->new();
+ $c->foo();
+
+ -------------
+  実行結果
+  S foo -1
+  C foo
+  S foo -2
+
+** overrideとsuper
+
+  override 'display_name' => sub {
+      my $self = shift;
+
+      return super() . q{, } . $self->title();
+  };
+  super()にはメソッドモディファイアと同じ引数が渡される。(明示しても無視される)
+
+* Moose::Manual::Roles
+** ロールとは
+- ロールは継承やインスタンス化はできない。
+- ロールで定義されたアトリビュートやメソッドは取り込んだクラスに追加される（フラット化）
+- ロールを取り込んだクラスのサブクラスはロールで定義されたメソッドやアトリビュートも継承される
+
+package RRR;
+use Moose::Role;
+
+has 'xxx' =>(...);
+sub yyy { ... }
+
+package CCC;
+use Moose;
+with 'RRR';    # <<<<
+ ...
+
+** 必須メソッド (requires)
+
+package HHH;
+use Moose::Role;
+requires 'break';
+
+** メソッドの衝突
+クラスに複数のロールを合成するとき、複数のロールに同名のメソッドがあると衝突が起こる。
+この場合、合成しようとしているクラスが同名のメソッドを「自分で」提供しなければなりません。
+
+** メソッドの排除と別名
+
+  with 'Breakable' => {
+      alias   => { break => 'break_bone' },
+      exclude => 'break',
+      },
+      'Breakdancer' => {
+      alias   => { break => 'break_dance' },
+      exclude => 'break',
+      };
+
+   *ただしこのPODのサンプルはうまく動作せず以下のエラーが発生する*
+    : Due to a method name conflict in roles 'Breakable' and 'Breakdancer', 
+    : the method 'break' must be implemented or excluded by 'FragileDancer' 
+
+
+** ロールの排除
+ロールは、合成できないロールを指定することもできます。これはロールの再利用性を制限するのでよく気をつけて利用してください。
+
+  package Breakable;
+  use Moose::Role;
+  excludes 'BreakDancer';
+* Moose::Manual::Types
+** 型
+  Any
+  Item
+      Bool
+      Maybe[`a]
+      Undef
+      Defined
+          Value
+              Num
+                Int
+              Str
+                ClassName
+                RoleName
+          Ref
+              ScalarRef
+              ArrayRef[`a]
+              HashRef[`a]
+              CodeRef
+              RegexpRef
+              GlobRef
+                FileHandle
+              Object
+                Role
+
+Mooseを使って作ったクラスは型名として利用できる
+
+** サブタイプ
+  Moose::Util::TypeConstraints
+  subtype 'PositiveInt'
+      => as 'Int'
+      => where { $_ > 0 }
+      => message { "The number you provided, $_, was not a positive number" };
+
+** 型変換　(coerce)
+  subtype 'ArrayRefOfInts'
+      => as 'ArrayRef[Int]';
+  
+  coerce 'ArrayRefOfInts'
+      => from 'Int'
+      => via { [ $_ ] };
+  
+  has 'snum' =>(is => 'rw',
+                isa => 'ArrayRefOfInts',
+                coerce => 1,              # 型変換を指示
+  );
+
+
+** 再帰的な型変換
+(省略)
+
+** 型結合
+複数の異なる型になれるアトリビュートを定義することができる
+
+  has 'output' => (
+      is  => 'rw',
+      isa => 'Object | FileHandle',
+  );
+
+** 型を生成するためのヘルパー関数
+Moose::Util::TypeConstraints モジュールは、特定の種類の型を生成するためのヘルパー関数を多数エクスポートする
+ class_type
+ role_type
+ maybe_type
+
+- enum
+  指定した値しか許さない Str型のサブタイプを生成できる
+  enum 'RGB' => qw( red green blue );
+
+** 無名の型
+
+型を生成する関数はすべて型オブジェクトを返します。
+この型オブジェクトは、親の型や、アトリビュートの isa オプションの値のように、型の名前を使える場所ならどこででも使えます。
+
+  has 'size' => (
+      is => 'ro',
+      isa => subtype 'Int' => where { $_ > 0 },
+  );
+
+これは、その場限りの型を作る（グローバルな名前空間レジストリを「汚染」したくない）ときに便利です。
+* Moose::Manual::MOP
+Class::MOP  クラス、アトリビュート、メソッドなどのイントロスペクションを行うためのAPI
+
+メタクラスオブジェクト(Moose::Meta::Class)の取得
+T2->meta;    # クラス->meta
+T2->$meta;   # オブジェクト->meta
+Class::MOP::Class->initialize('T2')    # 作成済みのメタクラスがあればそれを返し、無ければ新しい Class::MOP::Classオブジェクトを返す
+
+** メタクラスオブジェクトを使う
+- アトリビュートの一覧
+  for my $attr ( $meta->get_all_attributes ) {
+      print $attr->name, "\n";
+  }
+
+- メソッドのリスト
+  for my $method ( $meta->get_all_methods ) {
+      print $method->fully_qualified_name, "\n";
+  }
+
+- クラスの親クラス, サブクラス
+  for my $class ( $meta->linearized_isa ) {
+      print "$class\n";
+  }
+
+  for my $subclass ( $meta->subclasses ) {
+      print "$subclass\n";
+  }
+
+** MOPを使ってクラスを変更する
+
+- メソッドを追加
+  $meta->add_method( 'say' => sub { print @_, "\n" } );
+
+- アトリビュートを追加
+  $meta->add_attribute(
+      name => 'size',
+      is   => 'rw',
+      isa  => 'Int',
+  );
+
+* Moose::Manual::MooseX
+** MooseX::StrictConstructor
+
+コンストラクタが認識できない引数があったときはエラーが発生するようになる
+  package User;
+  use Moose;
+  use MooseX::StrictConstructor;
+  has 'name';
+  has 'email';
+  User->new( name => 'Bob', emali => 'bob@example.com' );
+                            ~~~~~~~
+** MooseX::Getopt
+new_with_options というメソッドをクラスに追加するロール
+これはコマンドラインオプションを受け取ってアトリビュートに値を入れてくれるコンストラクタです。
+
+これを使うとコマンドラインアプリケーション用のモジュールを書くのが非常に簡単になります。
+
+  package App::Foo;
+  use Moose;  with 'MooseX::Getopt';
+
+  has 'input' => (
+      is       => 'ro',
+      isa      => 'Str',
+      required => 1
+  );
+
+  has 'output' => (
+      is       => 'ro',
+      isa      => 'Str',
+      required => 1
+  );
+
+  sub run { ... }
+
+実行したいスクリプトの方にはこう書いておきます。
+
+  use App::Foo;
+
+  my $foo = App::Foo->new_with_options;
+  $foo->run;
+
+これで、コマンドラインからこんな風にスクリプトを実行できるようになります。
+  $ foo --input /path/to/input --output /path/to/output
+** MooseX::Singleton
+  package Config;
+  use MooseX::Singleton; # instead of Moose
+
+  ----------
+  my $conf1 = Config->instance();
+  my $conf2 = Config->instance();    # $conf1と同じオブジェクトが返る
+
