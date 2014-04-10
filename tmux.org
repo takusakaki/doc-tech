@@ -1,0 +1,47 @@
+
+* info
+
+http://blog.asial.co.jp/881
+https://wiki.archlinux.org/index.php/tmux
+
+** 設定
+http://qiita.com/catatsuy/items/db0a471bf1eabaa21c36
+
+* Commands
+** Session/Window
+tmux attach                  - すでに開いたセッションにアタッチする
+tmux attach -t <session      - セッションを指定してアタッチ
+tmux list-windows    (C-b w) - ウィンドウの一覧を取得する
+tmux new-window      (C-b c) - 新しいウィンドウを作る
+                     (C-b ,) - ウィンドウ名を変更
+tmux detach-client   (C-b d) - クライアントをデタッチする
+tmux list-keys       (C-b ?) - キーバインドの一覧を表示する
+tmux next-window     (C-b n) - 次のウィンドウを表示する
+tmux previous-window (C-b p) - 前のウィンドウを表示する
+tmux kill-window     (C-b k) - ウィンドウを強制的に閉じる
+
+tmux new -s <session-name>     Sessionを作成
+tmux ls                        Sessionの一覧を表示
+tmux rename-session -t 0 <name> Session名を変更
+tmux rename -t 0 <name>         同上
+
+** Pane
+C-b %    左右に分割 (新しいwindowが生成される)
+C-b "    上下に分割 (同上)
+C-o      隣のpaneに移動  ???????
+C-b o    隣のpaneに移動
+C-b ;    前のpaneに移動
+C-b x    現在のpaneを消去 ???????
+C-b !    現在のpane以外の全てのpaneを消去
+
+* .tmux.conf
+** Prefix(C-b)の変更
+unbind C-b
+set -g prefix C-t
+
+
+* Tips / Trobuleshoot
+** lsに色がつかない
+.bashrc が読み込まれないため
+→ .bash_profile に . ~/.bash_aliases を追加
+
