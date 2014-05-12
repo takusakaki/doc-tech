@@ -104,3 +104,30 @@ cpanでインストールしようとすると、ヘッダが見つからない�
 
 
     
+
+* プロトタイプ
+ $    対応する引数一つをとる意味
+ @    以降にリストを要求する意味
+ &    対応する引数一つに、サブルーチンを要求する意味
+ \@   対応する引数一つに、配列変数を要求する意味
+ ;    これ以降の引数は省略可能という意味
+
+
+ 呼び出し時にサブルーチン名の先頭に & を付けるとプロトタイプのチェックがされなくなる
+
+** サブルーチンへリファレンスを渡す記述の違い
+
+プロトタイプを使わない場合        プロトタイプを使う場合
+
+:  sub aaa {                      sub aaa(\@) {                  <<<<<<<<<<<<
+:      my $ref_array = shift;         my $ref_array = shift;   
+:  }                              }                            
+:                               
+:  my @ary = qw(1 2 3);           my @ary = qw(1 2 3);         
+:  aaa(\@ary);                    aaa(@ary);                     <<<<<<<<<<<<
+:                               
+
+ 参考：http://www7.atwiki.jp/perlmemo/?cmd=word&word=perl%20%E3%83%97%E3%83%AD%E3%83%88%E3%82%BF%E3%82%A4%E3%83%97&type=normal&page=%E3%83%97%E3%83%AD%E3%83%88%E3%82%BF%E3%82%A4%E3%83%97                                 
+
+* 単独の実行ファイルの作成 (App::FatPacker)
+http://perltricks.com/article/58/2014/1/5/The-easy-way-to-build-stand-alone-Perl-apps
