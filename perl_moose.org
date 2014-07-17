@@ -384,7 +384,7 @@ around 'foo' => sub {
  package main;
  
  my $c = C->new();
- $c->foo();
+ $c->foo();    <<<<<<<<< 親クラスのfooから順次呼ばれる
 
  -------------
   実行結果
@@ -484,6 +484,8 @@ Mooseを使って作ったクラスは型名として利用できる
       => where { $_ > 0 }
       => message { "The number you provided, $_, was not a positive number" };
 
+subtype で定義した型はグローバルに展開されるため他のクラスからも使用可能となる
+
 ** 型変換　(coerce)
   subtype 'ArrayRefOfInts'
       => as 'ArrayRef[Int]';
@@ -511,9 +513,23 @@ Mooseを使って作ったクラスは型名として利用できる
 
 ** 型を生成するためのヘルパー関数
 Moose::Util::TypeConstraints モジュールは、特定の種類の型を生成するためのヘルパー関数を多数エクスポートする
- class_type
- role_type
- maybe_type
+*** class_type
+ https://github.com/jpa/Moose-Doc-JA/blob/master/Moose/Cookbook/Basics/Recipe5.pod
+以下のショートカット
+
+  subtype 'HTTP::Headers'
+      => as 'Object'
+      => where { $_->isa('HTTP::Headers') };
+
+Mooseを使っているクラスはすべて内部的に型制約が生成されますが、Mooseを使っていないクラスについては明示的に型を宣言しなければなりません。
+
+ex)
+  subtype 'My::Types::HTTP::Headers' => as class_type('HTTP::Headers');
+
+
+*** role_type
+
+*** maybe_type
 
 - enum
   指定した値しか許さない Str型のサブタイプを生成できる
@@ -620,4 +636,9 @@ new_with_options というメソッドをクラスに追加するロール
   ----------
   my $conf1 = Config->instance();
   my $conf2 = Config->instance();    # $conf1と同じオブジェクトが返る
+
+
+* Moose::Cookbook::Basics
+** Recipe6
+__PACKAGE__->meta->make_immutable;
 

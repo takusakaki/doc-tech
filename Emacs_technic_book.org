@@ -985,6 +985,7 @@ anythingでしおりをリストすることができる
 Exuberant Ctags:
 http://ctags.sourceforge.net/
 
+(恐らく)これはEmacsに同梱されているCtags????
 : ctags -e ファイル名 ...   TAGSファイルを作成 (-eでemacsのetagsモード用のタグファイルを生成)
 : ctags -e *              カレントディレクトリすべてを対象
 : ctags -e **/*           サブディレクトリも対象
@@ -997,7 +998,7 @@ http://ctags.sourceforge.net/
 :
 :  -e   Output tag file for use with Emacs.
 :
-:  --recurse=[yes|no]
+:  --recurse=[yes|no] | -R
 :       Recurse into directories supplied on command line [no].
 :
 :  --languages=[+|-]list
@@ -1011,6 +1012,15 @@ http://ctags.sourceforge.net/
 :  --list-maps=[language|all]
 :       Output list of language mappings.
 : 
+
+設定ファイル
+$HOME/.ctags にオプションを指定可
+-e
+--append=yes
+--recurse=yes
+--langmap=Perl:.pl.pm.t,java:+.j
+
+
 
 
 *** 操作
@@ -1626,6 +1636,7 @@ howmが(自動的に)有効になっているのが理由らしい
 
 ** 行間
 (setq line-spacing 0.3)
+
 ** dired
 C-x d   diredを開く
   C-x d ..../*.txt のようにワイルドカードで絞り込むことも可能
@@ -1673,6 +1684,33 @@ table-insert
 C-<, C->   セルの幅を調整
 C-{, C-}　 セルの高さを調整
 M-x table-fixed-width-mode  固定幅モード
+
+** e2wm
+C-c ' M  e2wm:dp-code-main-maximize-toggle-command  メインウインドウの最大化をトグル
+C-c ' C  e2wm:dp-code-toggle-clock-command          履歴表示と時計をトグル
+
+*** パースペクティブ
+現在のパースペクティブはバーに、`E2Wm(code)' のように表示される
+
+code
+two
+doc  1つのドキュメントを縦２分割で同時に表示
+
+*** プラグイン
+**** files
+codeの左上に表示される
+    j,k : 上下移動
+    D : diredで開く
+    + : ディレクトリ追加
+    ^ : 上の階層へ
+    g : 表示更新
+    d : ファイル削除
+    r : ファイルリネーム
+    t : 時間でソート
+    s : 名前でソート
+    z : サイズでソート
+    space, enter : ファイルを開く
+
 
 * リンク
 http://hpcgi1.nifty.com/spen/index.cgi?OrgMode/Manual
