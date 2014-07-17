@@ -1626,6 +1626,54 @@ howmが(自動的に)有効になっているのが理由らしい
 
 ** 行間
 (setq line-spacing 0.3)
+** dired
+C-x d   diredを開く
+  C-x d ..../*.txt のようにワイルドカードで絞り込むことも可能
+m     dired-mark       マークする
+u     dired-unmark     マークを解除
+d     dired-flag-file-deletion     削除フラグを立てる
+x     dired-do-flagged-delete     削除マーク (D) が設定されているファイルを削除する
+D     dired-do-delete     確認後、即座に削除
+
+v     dired-view-file     ファイルを読み込み専用で開く(q で閲覧終了)
+C-o  _dired-display-file     dired バッファをアクティブにしたまま、現在行のファイルを別ウインドウで開く_
+g     revert-buffer     ディレクトリの再読込
+>     dired-next-dirline     次のディレクトリへ移動
+<     dired-prev-dirline     前のディレクトリへ移動
+i    _dired-maybe-insert-subdir     サブディレクトリの一覧を追加する_
+C-M-n dired-next-subdir     次のサブディレクトリへ移動
+C-M-p dired-prev-subdir     前のサブディレクトリへ移動
+$     dired-hide-subdir     ディレクトリを表示／非表示
+R     dired-do-rename     ファイル名を変更
+s    _dired-sort-toggle-or-edit     日付とファイル名でソート_
+w     dired-copy-filename-as-kill     現在行のファイル名をキルリングへコピー
++    _dired-create-directory     ディレクトリを作成する_
+!     dired-do-shell-command     カレントファイルやマーク済のファイルに対しコマンドを実行する
+h     describe-mode     dired のヘルプを表示
+q     quit-window     dired を抜ける
+
+** direx
+http://cx4a.blogspot.jp/2011/12/popwineldirexel.html
+direx:jump-to-directory 開く
+
+| n, C-n, <down>       | direx:next-node              | 次のノードを選択する               |
+| p, C-p, <up>         | direx:previous-node          | 前のノードを選択する               |
+| C-M-n, C-M-<down>    | direx:next-sibling           | 次の兄弟ノードを選択する           |
+| C-M-p, C-M-<up>      | direx:previous-sibling       | 前の兄弟ノードを選択する           |
+| ^, C-M-u, C-M-<left> | direx:up-node                | 親ノードを選択する                 |
+| C-M-d, C-M-<right>   | direx:down-node              | 最初の子ノードを選択する           |
+| f                    | direx:find-node              | そのノードを現在のウィンドウに開く |
+| o                    | direx:find-node-other-window | そのノードを別のウィンドウに開く   |
+| RET                  | direx:maybe-find-node        | そのノードをトグルする             |
+| q                    | quit-window                  | ウィンドウを閉じる                 |
+
+** table.el
+http://dev.ariel-networks.com/wp/documents/aritcles/emacs/part11
+table-insert
+C-<, C->   セルの幅を調整
+C-{, C-}　 セルの高さを調整
+M-x table-fixed-width-mode  固定幅モード
+
 * リンク
 http://hpcgi1.nifty.com/spen/index.cgi?OrgMode/Manual
 http://d.hatena.ne.jp/tamura70/20100220/org
