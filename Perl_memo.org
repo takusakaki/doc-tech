@@ -56,8 +56,12 @@ http://gihyo.jp/dev/feature/01/test-perl/0002?page=1
 Data Driven Testing Framework（データ駆動型テストフレームワーク）
 
 * デバッグ
-** デバッガ
-
+** デバッガ: 周辺コードの表示
+*** vコマンド
+- v 周辺のコードを見る
+　連続実行すると下に移動していく
+- - (マイナス) 上方向に戻る
+- . (ドット) 元の位置に戻る
 
 *** {{ v  周辺コードを常に表示する
 参考：http://perl-users.jp/articles/advent-calendar/2011/casual/12
@@ -72,6 +76,17 @@ Data Driven Testing Framework（データ駆動型テストフレームワーク
 : } 
 
 2) PERLDB_OPTS環境変数 に指定
+
+** 異常終了した時にスタックトレースを表示する
+いずれも同じ結果が得られる
+
+方法１) use Carp::Always を導入する
+http://qiita.com/yuya_presto/items/5729656c1dfcc6950cb3
+
+方法２) dieした時の挙動を変え、Carp::confessを呼ぶ
+: use Carp;
+: $SIG{ __DIE__ } = sub { Carp::confess( @_ ) };
+http://www.perlmonks.org/?node_id=640319
 
 * 環境
 ** Macに Image::Magickをインストール

@@ -1,0 +1,150 @@
+*Perlのコードから自動的にシーケンス図を作成する方法の検討*
+
+_PlantUMLなどを使用して作成したい_
+
+* Start UML::Sequence
+
+_インストール (cpanm UML::Sequence) で失敗する_
+===> make testでエラーが出ているが、無理やり make install してみた
+
+_実行時に以下のエラーが出る_
+    _No DB::DB routine defined_
+　　(F) 現在実行中のコードは、-d スイッチを付けてコンパイルされましたが、何らかの理由により、perl5db.pl (あるいは、その複製) が各実行文の頭で呼び出すルーティンを定義していません。そのファイルは自動的に require されるものであり、正しく解釈できなければ、require が失敗するはずですので、これはとても有り得ない状態です。
+     （http://homepage1.nifty.com/yito/anhttpd/perldiag/perldiag-m.html）
+
+　このエラーは内部でプロファイリングする際、(perl -d:CallSeq main.pl) に発生している模様
+
+
+* DONE (NG) Devel::NYTProf
+
+NYTProfで取得したプロファイルを元に実行シーケンスを取得する
+
+: $ perl -d:NYTProf ....
+
+** nytprofcg
+Callgring format 形式のプロファイルデータを作成し、KCacheGrindで読み込み、Call Graphで確認する
+: $ nytprofcg --file=nytprof.out --out=nytprof.callgrind
+: $ kcachegrind nytprof.callgrind 
+
+KCacheGrindの Call Graph は分岐を含めて全呼び出しを確認できるが
+_各分岐間の実行順序は把握できない_
+
+
+** nytprofcall
+
+_実行された関数は全て表示されるが、実行順には表示されない_
+
+例 (func_1 --> func2 --> ... --> func_5 と呼び出しているが...)
+#+BEGIN_EXAMPLE
+main::func_1;main::func_2;main::func_3;main::func_4 218
+main::func_1;main::func_2 49
+main::func_1 85
+main::func_1;main::func_2;main::func_3;main::func_4;main::func_5 32
+main::func_1;main::func_2;main::func_3 56
+#+END_EXAMPLE
+
+
+
+* DONE (NG) Devel::StackTrace
+
+a) トレースを取りたい最下層の箇所で、 Devel::StackTrace->new()を呼ぶ
+b) 　　　　　〃　　　　　　　　　　　 print Devel::StackTrace->new()->as_string() を実行
+
+問題点
+_１つのスタック分しかトレースできない_ 分岐した場合は追跡できない
+
+コード例
+#+BEGIN_SRC cperl
+  use Devel::StackTrace;
+
+  {
+     ........
+    $trace = Devel::StackTrace->new();           # a) トレースの取得
+    #print Devel::StackTrace->new()->as_string() # b) 
+  }
+
+  # スタックトレースの表示 a)
+  while ( my $frame = $trace->prev_frame() ) {
+      print "- ", $frame->subroutine(),  "   (". $frame->filename(). ":". $frame->line() . ")\n";
+  }
+#+END_SRC
+
+実行結果
+#+BEGIN_EXAMPLE
+frame count=9
+- main::foo   (strace_test.pl:50)
+- CCC::func_C_1   (strace_test.pl:75)
+- BBB::func_B_1   (strace_test.pl:38)
+- AAA::func_A_1   (strace_test.pl:27)
+- AAA::func_A_2   (strace_test.pl:8)
+- AAA::func_A_3   (strace_test.pl:9)
+- AAA::func_A_4   (strace_test.pl:10)
+- AAA::func_A_5   (strace_test.pl:11)
+- Devel::StackTrace::new   (strace_test.pl:15)
+#+END_EXAMPLE
+
+** コード
+#+BEGIN_SRC cperl
+our $trace;
+
+package AAA;
+sub new {
+    my $class = shift;
+    return bless {n=>shift}, $class;
+}
+sub func_A_1 {  shift->func_A_2;  }
+sub func_A_2 {  shift->func_A_3;  }
+sub func_A_3 {  shift->func_A_4;  }
+sub func_A_4 {  shift->func_A_5;  }
+sub func_A_5 {
+    my $self = shift;
+    print "n=". $self->{n}. "\n";
+    $trace = Devel::StackTrace->new(indent => 1);
+    # print Devel::StackTrace->new()->as_string();
+}
+#---------------------------
+package BBB;
+sub new {
+  return bless {}, shift;
+}
+sub func_B_1 {
+    my $self =shift;
+    my $n = shift;
+    my $a = AAA->new($n);
+    $a->func_A_1();
+}
+#---------------------------
+package CCC;
+sub new {
+  return bless {}, shift;
+}
+sub func_C_1 {
+    my $self =shift;
+    my $n = shift;
+    my $b = BBB->new;
+    $b->func_B_1($n);
+}
+#---------------------------
+
+package main;
+use Devel::StackTrace;
+
+foo(1);
+disp_trace();
+foo(2);
+disp_trace();
+
+sub foo {
+  my $n = shift;
+  my $c = CCC->new;
+  $c->func_C_1($n);
+}
+
+sub disp_trace{
+    print "frame count=". $trace->frame_count(). "\n";
+    while ( my $frame = $trace->prev_frame() ) {
+        print "- ", $frame->subroutine(),  "   (". $frame->filename(). ":". $frame->line() . ")\n";
+    }
+}
+1;
+#+END_SRC

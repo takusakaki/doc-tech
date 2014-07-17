@@ -1,0 +1,104 @@
+* Android
+** androidコマンドによるAndroidプロジェクトの設定
+
+ターゲットの一覧の表示
+  android list targets
+
+プロジェクトの更新
+  android update project [--path|-p] <project path>
+     -n --name <name>      ....project name
+     -t --target <target>  ....target id
+     -l --library <path>   ....       
+
+
+
+** メモリリーク調査/メモリ使用量 (hprof)
+
+*** Eclipse の Memory Analyzerを使用する方法
+
+(参考)http://andbrowser.com/development/knowhow/65/eclipse-android-memory-leak-mat/
+
+- DDMSの 「Dump HPROF file」で取得
+　HPROFファイルが作成され、Eclipseで開かれ表示される (このときダイアログが開くが無視して消してよい)
+　HPROFファイルは /tmp/以下に保存されるが、Memory Analyzerの「Heap Dump History」ビューで取得したダンプファイルの一覧が表示される
+
+　
+　
+  ※本来なら（元々？）、取得したダンプファイルを SDKのhprof-convで変換する必要があるようだが、
+　　何もしないでもダンプの内容が見られた
+
+- Histgram
+  表示される項目
+   - インスタンス数
+   - 表面上のヒープ（表層ヒープ：shallow heap）（すべてのインスタンスで利用しているメモリの総合計）
+   - 保持されたヒープ（保持ヒープ：retained heap）（他のオブジェクトへの参照をもっているオブジェクトを含めたすべてのインスタンスで生きているメモリの総合計）
+
+  shallow heap でサイズの大きいオブジェクトが分かる  
+
+  表の項目を右クリック > List Objects > with incoming references 　で、ヒープにある当該オブジェクトのリストが生成される
+  ツリーを辿っていくと参照元が分かる
+
+   - ヒープダンプの比較
+　　方法１．
+      Navigation History viewを開く
+      各HPROFの Histgram viewを開くと Navigation History viewに "histgram" が表示されるので、右クリックし Add to Compare Basket を選択すると、Compare Bascket Viewに追加される
+      これを繰り返し、Compare Basket Viewに比較したいhistgramを溜めていく
+      Compare Basket viewの　Compare the Results を押す(右上の [！] ボタン) と、Compared Tables が表示される
+
+　　方法２．
+      Compare to Another Heap Dump ボタン (ツールバーの右端)を選択すると、ダンプデータを選択するダイアログが表示されるので選択すると
+      各オブジェクトの増分が表示される
+
+   - Immediate Dominators
+      Histgram のbyte[]を右クリックし Immediate Dominators を選択するとより具体的なクラス(?)が分かる
+
+
+
+**** スタンドアロンのMAT
+http://www.eclipse.org/mat/　
+スタンドアロン版がダウンロード可能
+
+
+
+* Linuxコマンド
+
+** パイプした lessでカラー表示
+
+受け渡すコマンドでカラー表示を指定し、less -Rとする
+
+ls --color | less -R
+tree -C | less -R
+
+** 使用中のポート
+
+- netstat 
+
+- あるポートを開いているプロセス
+  # lsof -i:<port>
+  # netstat -anp | grep <port>
+      (-a Send/Recvの両方、-n アドレスを数値で表示、-p プロセスを表示)
+
+* Selenium
+
+** Selenium WebDriver
+*** 導入
+
+1) Pythonの WebDriverのインストール
+pipをまずインストールしてから Selenium WebDriverをインストールする
+
+$ sudo apt-get install python-pip
+$ sudo pip install --proxy=<proxy>   -U selenium
+
+
+
+*** Basic認証の通し方
+
+(参考) http://aleetesting.blogspot.jp/2011/10/selenium-webdriver-tips.html
+
+FireFox では
+URL欄に about:configと入力し設定モードに入り、
+browser.safebrowsing.malware.enabled を falseにする
+
+
+*** スクリプトの作成
+Selenium IDEで作成したコードは UnitTestのコードになっている
