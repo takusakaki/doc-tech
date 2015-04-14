@@ -1227,7 +1227,6 @@ C-c ,
  - [-n], [+n]    行番号を付ける。 +n ではその前の行番号を引き継ぐ
 
 
-
 ** 別のファイルの取り込み (#+INCLUDE) [14.13]
 :#+INCLUDE: "ファイル名" src メジャーモード
 :#+INCLUDE: "ファイル名" quote      別のorgファイルを引用
@@ -1249,7 +1248,7 @@ C-c ,
 : C-^    ソート
 : C-`    カラムを別バッファで編集
 :
-: <数値>  列の表示幅を指定
+: <数値>  列の表示幅を指定 
 
 *** orgtbl マイナーモード
 他のメジャーモードでテーブル機能が利用可能
@@ -1293,6 +1292,13 @@ TBLFM の行で C-c C-c 全行に計算式を適用
 *** HTML表のスタイル設定
    http://d.hatena.ne.jp/tamura70/20100307/org
 
+*** 表のエクスポート
+表の場所で「M-x org-table-export RET」とタイプして，ファイル名を指定した後，以下の形式でエクスポートできる．
+| orgtbl-to-tsv   | タブ区切りのテキスト形式   |
+| orgtbl-to-csv   | カンマ区切りのテキスト形式 |
+| orgtbl-to-html  | HTML形式                   |
+| orgtbl-to-latex | LaTeX形式                  |
+
 *** (不明なこと)
  - "|"文字を表の中に記述するには？
  - HTML形式にエクスポートしたときに罫線を描画するには？
@@ -1315,6 +1321,10 @@ TBLFM の行で C-c C-c 全行に計算式を適用
 : [[リンク先][表示文字列]]
 
 : C-c C-o  ハイパーリンクを内部
+*** リンクの挿入
+(http://d.hatena.ne.jp/tamura70/20100209/org)
+: C-c l   org-store-link   リンク先で実行し、リンク場所を保存する (キーバインドは予め設定が必要)
+: C-c C-l org-insert-link
 
 *** 開くリンク
 リンクに文字列を指定すると最初に一致した部分へのリンクになる
@@ -1329,11 +1339,6 @@ HTMLに変換したときにターゲット文字列がそのまま表示され�
 コメントで以下のように記述し、C-c C-c を入力
 :#<<<ハイパーリンク>>>
 ハイパーリンク
-
-*** リンクの挿入
-(http://d.hatena.ne.jp/tamura70/20100209/org)
-: C-c l   org-store-link   リンク先で実行し、リンク場所を保存する (キーバインドは予め設定が必要)
-: C-c C-l org-insert-link
 
 ** メモを取る org-remember [14.4]
 .emacs
@@ -1458,7 +1463,7 @@ Agendaの種別
 :  ve          エントリされているテキストを表示
 :
 :  r           再読込
-:　C-c C-x C-c 列表示
+:　C-c C-x C-c 列表示  (解除はorg-columns-quit)
 :
 :  C-c C-t     TODOを設定
 :  C-↑, C-↓   優先度を変更
@@ -1528,6 +1533,17 @@ org-export-* で調べられる。Ascii, HTML, xoxo(?), iCalendar形式でエク
 | timestamp | タイムスタンプを出力するかどうか                     | nil/t     |
 
 
+** エクスポートのオプション
+http://d.hatena.ne.jp/tamura70/20100304/org
+
+*** HTMLエクスポートのキーワード
+ | キーワード                  | 説明                               |
+ |-----------------------------+------------------------------------|
+ | #+HTML:                     | HTML記法の行                       |
+ | #+BEGIN_HTML ... #+END_HTML | HTML記法のブロック                 |
+ | #+ATTR_HTML:                | 表，イメージ，リンク等に対する設定 |
+ | #+STYLE:                    | スタイルファイルの指定             |
+
 
 ** ドローワ
  #+DRAWERS: PROPERTIES CLOCK LOGBOOK FEEDSTATUS MEMO
@@ -1554,20 +1570,62 @@ org-export-* で調べられる。Ascii, HTML, xoxo(?), iCalendar形式でエク
  | C-c C-x A              | "Archive"子見出しに移動する                                         |
  | C-TAB                  | ARCHIVEタグの付いた見出しを開く (通常のTABでは開かない）            |
 
-** エクスポートのオプション
-http://d.hatena.ne.jp/tamura70/20100304/org
-
-*** HTMLエクスポートのキーワード
- | キーワード                  | 説明                               |
- |-----------------------------+------------------------------------|
- | #+HTML:                     | HTML記法の行                       |
- | #+BEGIN_HTML ... #+END_HTML | HTML記法のブロック                 |
- | #+ATTR_HTML:                | 表，イメージ，リンク等に対する設定 |
- | #+STYLE:                    | スタイルファイルの指定             |
-
 ** HTML表のスタイル設定
   http://d.hatena.ne.jp/tamura70/20100307/org
  
+** yasnippetの利用
+http://bhby39.blogspot.jp/2012/01/yasnippet.html
+<s <TAB>  :  #+begin_src ... #+end_src 
+<e <TAB>  :  #+begin_example ... #+end_example
+<q <TAB>  :  #+begin_quote ... #+end_quote 
+<v <TAB>  :  #+begin_verse ... #+end_verse 
+<c <TAB>  :  #+begin_center ... #+end_center 
+<l <TAB>  :  #+begin_latex ... #+end_latex 
+<L <TAB>  :  #+latex: 
+<h <TAB>  :  #+begin_html ... #+end_html 
+<H <TAB>  :  #+html: 
+<a <TAB>  :  #+begin_ascii ... #+end_ascii 
+<A <TAB>  :  #+ascii: 
+<i <TAB>  :  #+index: line 
+<I <TAB>  :  #+include: line 
+
+** 検索 (org-sparse-tree)                                            :remark:
+[[http://rubikitch.com/2014/10/10/org-sparse-tree-indirect-buffer/][Emacs org-modeの検索機能を16倍パワーアップする方法]]
+C-c /       (org-sparse-tree)
+C-c / /(r)   regexp  ... 指定した正規表現に合致する箇所のみ開き、該当箇所ハイライトして表示
+
+*** indirect-buffer を用いて別バッファに結果を表示
+"＜元のバッファ名＞-1" というバッファ名で別バッファが開き検索結果を表示する。
+元のバッファのツリーの開閉状態などは維持される。
+別バッファで編集した内容は、元のバッファに反映される（別バッファ上で保存する必要もない）
+
+#+BEGIN_SRC 
+(defun org-sparse-tree-indirect-buffer (arg)
+  (interactive "P")
+  (let ((ibuf (switch-to-buffer (org-get-indirect-buffer))))
+    (condition-case _
+        (org-sparse-tree arg)
+      (quit (kill-buffer ibuf)))))
+(define-key org-mode-map (kbd "C-c /") 'org-sparse-tree-indirect-buffer)
+#+END_SRC
+
+** Narrow                                                            :remark:
+特定の箇所だけ表示する。
+  org-narrow-to-subtree で表示を変え、widenで元に戻す
+C-x n s     (org-narrow-to-subtree) Narrow buffer to current subtree. 
+C-x n b     (org-narrow-to-block)   Narrow buffer to current block. 
+C-x n w     (widen)                 Widen buffer to remove narrowing.
+
+*** ナローイングを間接バッファで行う (narrow-indirect.el)
+[[http://rubikitch.com/2015/01/07/narrow-indirect/][narrow-indirect.el : ナローイングを間接バッファで行うようにカイゼンする！]]
+
+キーバインド例)
+#+BEGIN_SRC 
+(define-key ctl-x-4-map "nd" 'ni-narrow-to-defun-indirect-other-window)
+(define-key ctl-x-4-map "nn" 'ni-narrow-to-region-indirect-other-window)
+(define-key ctl-x-4-map "np" 'ni-narrow-to-page-indirect-other-window)
+#+END_SRC
+
 ** その他参考資料
 「Emacs org-modeを使ってみる」 http://d.hatena.ne.jp/tamura70/searchdiary?word=[org-mode]
 *** org-mode 7.4のインストール
@@ -1582,6 +1640,24 @@ make install
 
 
 * その他
+** 変数
+*** 確認
+- 一覧  apropos-variable
+- 表示  describe-variable
+
+*** 設定
+- .emacsで設定
+(setq <変数名> <値>)
+
+- その場で設定
+M-x set-variable
+Set Variable : <変数名>
+Set <変数名> to globally new value: <値>
+
+*** cperl-modeでの自動改行
+セミコロンを入力するなどすると自動改行＋インデントするモード
+cperl-auto-newline
+
 ** 拡大/縮小 (Emacs23)
 
 C-x C--  縮小
@@ -1601,6 +1677,120 @@ Ctrl + マウスホイールで拡大/縮小
        (vector (list 'control mouse-wheel-up-event))
        'text-scale-decrease)))
 #+END_SRC lisp
+** フォント関連の操作
+(http://triplepulu.blogspot.jp/2013/01/emacs.html)
+  -  使用中のフォントセットを表示
+     *scratch* buffer にて
+  :   (frame-parameter nil 'font) [Ctrl + j]
+  
+  - フォントセット詳細表示
+  : M-x describe-fontset 
+  
+  - フォントセット一覧表示
+  : M-x list-fontsets 
+  
+  - default-frame-alist で設定している値を表示
+  : M-x describe-variable
+  
+  - フォント切り替え
+  : M-x set-frame-font
+
+  - フォントセット一覧
+  : (prin1-to-string (x-list-fonts "*"))    [C+j]
+
+*** 「フォントセット一覧」で出力した内容を解析するスクリプト
+#+BEGIN_SRC 
+#!/usr/bin/perl
+use v5.12;
+use Getopt::Long;
+
+=pod
+
+=head1 NAME
+
+disp_emacs_font_set.pl - Emacs のフォント一覧を表示
+
+=head1 手順
+
+=head2 準備
+
+予めEmacs の *scratch* バッファで
+   (prin1-to-string (x-list-fonts "*"))    [C+j]
+として、フォントの一覧を抽出し、ファイル fset に保存しておく
+
+=head2 実行
+
+実行すると、フォントの一覧が表示される。フォント名でソートされる。
+特定の条件で絞り込む場合は、引数に任意の文字列を指定するとそれに該当したフォントのみが表示される
+
+ e.g.)  disp_emacs_font_set.pl bold
+
+=cut
+
+my $verbose = 0;
+GetOptions (
+           "verbose" => \$verbose,
+          );
+
+my $cond = $ARGV[0];
+
+my $fontdata = "fset";
+open my $fh, "<", $fontdata or die "***** fail to open font data";
+my $dat = (<$fh>)[0];
+close $fh;
+
+$dat =~ s/^"\(//;
+$dat =~ s/\)"$//;
+$dat =~ s/^\\"//;
+$dat =~ s/\\"$//;
+
+my $fonts;
+
+my @fsets = split (/\\"\s+\\"/, $dat);
+my $fontnames;
+foreach my $fset (sort sort_font @fsets) {
+    next if ($cond and $fset !~ /$cond/i);
+    if ($verbose) {
+        say $fset;
+        next;
+    }
+
+    # verbose指定でない場合はフォント名のみ表示
+    my $fontname = _get_fontname($fset);
+    next if exists $fontnames->{$fontname};
+    say $fontname;
+    $fontnames->{$fontname} = 1;
+
+#TODO 更に分類して簡潔な形式にまとめ把握しやすくする (フォント名 -> ボールド　とか？）
+    # add_font($fset);
+}
+
+sub _get_fontname {
+    (split(/-/, shift))[2];
+}
+
+sub sort_font {
+    # # say "$a, $b";
+    # uc( (split(/-/, $a))[2] ) cmp uc ((split(/-/, $b))[2])
+    uc( _get_fontname($a)) cmp uc (_get_fontname($b))
+}
+
+# sub add_font {
+#     my $fset = shift;
+#     my $fontname = split(/-/, $fset))[2];
+    
+# }
+#+END_SRC
+
+  
+** 文字色
+*** 変数に色をつける (hi-lock-mode)
+M-s h r  色をつける変数を指定
+         C-s/C-r でインクリメンタルサーチを実行中に行うと当該変数が色付けの対象となる
+          \Wsock\W   (sockは該当、socketは非該当とする)
+M-s h u  変数の色付けを解除
+
+
 ** プロキシ
 .emacs
 : (setq url-proxy-services '(("http" . "proxy.server.com:8080"))) 
@@ -1686,19 +1876,42 @@ C-{, C-}　 セルの高さを調整
 M-x table-fixed-width-mode  固定幅モード
 
 ** e2wm
+M-+      e2wm:start-management  開始
+C-c ' Q  e2wm:stop-management   終了
+
+C-.      e2wm:pst-history-forward-command   履歴進む
+C-,      e2wm:pst-history-back-command      履歴戻る
+C-c ' n  e2wm:pst-history-down-command 
+C-c ' p  e2wm:pst-history-up-command 
+
+C-c ' l  e2wm:pst-update-windows-command
+C-c ' DEL e2wm:pst-change-prev-pst-command 
+
+C-c ' I  e2wm:dp-code-imenu-toggle-command          Imenu部分（codeの右側) の表示をトグル
+C-c ' S  e2wm:dp-code-sub-toggle-command            サブ画面 （codeの下側) の表示をトグル
 C-c ' M  e2wm:dp-code-main-maximize-toggle-command  メインウインドウの最大化をトグル
 C-c ' C  e2wm:dp-code-toggle-clock-command          履歴表示と時計をトグル
 
+
+
+
+
+
 *** パースペクティブ
 現在のパースペクティブはバーに、`E2Wm(code)' のように表示される
+              doc 
+             <M-up>
+               ↑
+code <M-left> ←→ <M-right> two
+               ↓
+              array
+             <M-down>
 
-code
-two
 doc  1つのドキュメントを縦２分割で同時に表示
 
 *** プラグイン
 **** files
-codeの左上に表示される
+codeパースペクティブの左上に表示される
     j,k : 上下移動
     D : diredで開く
     + : ディレクトリ追加
