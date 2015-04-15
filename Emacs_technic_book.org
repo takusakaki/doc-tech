@@ -503,6 +503,21 @@ _[TODO]インストールしたが機能していない_
 : (global-auto-complete-mode 1)
 
 * Chapter07 検索・置換
+** C-u C-s (C-r) 正規表現で検索
+http://rubikitch.com/2015/03/19/sd1409-migemo-ace-jump-mode-dabbrev/
+| メタ文字    | 意味                                       |
+|-------------+--------------------------------------------|
+| .           | 改行以外のすべての文字                     |
+| *           | 直前の表現が 0 回以上                      |
+| +           | 直前の表現が 1 回以上                      |
+| ?           | 直前の表現が 0 回か 1 回                   |
+| [ … ]      | 文字クラス（どれかの文字に一致）           |
+| [^ … ]     | 否定文字クラス（どらかの文字に一致しない） |
+| ^           | 行頭                                       |
+| $           | 行末                                       |
+| \｜         | \｜で区切られた表現のうちどれか            |
+| $latex … $ | グルーピング                               |
+
 ** M-x re-builder 正規表現を対話的に作成 [7.1]
 #+BEGIN_EXAMPLE
 C-c C-i (reb-change-syntax)  正規表現の文法を切り替える
@@ -605,6 +620,35 @@ C-u を付けると前後の行も表示
 インストール/.emacs
 :;; grep-edit.el   (install-elisp-from-emacswiki "grep-edit.el")
 :(require 'grep-edit)
+
+** ace-jump-mode                                                     :remark:
+複数バッファ内でカーソル移動を素早く行う
+ - デフォルトでは、'ace-jump-mode (C-c SPC) を実行すると画面内のあらゆる単語の先頭が赤くa-z,A-Zに表示が変わるので
+   移動したい箇所の文字を入力する。そうすると該当箇所に絞り込まれるのでもう一度入力すると、そこに移動する
+
+ - 下記の設定では、実行するとステータスバッファに、"Head Char:"と表示されるので、移動したい箇所の先頭文字を入力する
+   （おそらく setq ace-jump-mode-gray-background nil の箇所)
+    *ただしこれでは日本語の箇所には移動できない*
+
+ - ace-jump-mode.elにある設定例では、"C-c SPC" にキーアサインされているが、org-modeで使用されているので使わないほうが良い
+
+
+https://github.com/winterTTr/ace-jump-mode/wiki
+http://rubikitch.com/2015/03/19/sd1409-migemo-ace-jump-mode-dabbrev/
+#+BEGIN_SRC 
+(autoload
+  'ace-jump-mode
+  "ace-jump-mode"
+  "Emacs quick move minor mode"
+  t)
+(define-key global-map (kbd "C-:") 'ace-jump-mode)
+(setq ace-jump-mode-gray-background nil)
+;; (setq ace-jump-word-mode-use-query-char nil)
+;; ヒント文字に使う文字を指定する
+(setq ace-jump-mode-move-keys
+      (append "asdfghjkl;:]qwertyuiop@zxcvbnm,." nil))
+#+END_SRC
+
 
 * Chapter08 
 ** fllow-mode [8.3]
