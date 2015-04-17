@@ -632,6 +632,11 @@ C-u を付けると前後の行も表示
 
  - ace-jump-mode.elにある設定例では、"C-c SPC" にキーアサインされているが、org-modeで使用されているので使わないほうが良い
 
+ *_****************************************************************************************
+  _画面に見えている範囲しか移動できない（org-modeのアウトラインで隠れている箇所も対象外となる）_
+  _このため検索というより、画面を複数のフレームで細かく分割しているときの移動に役に立ちそう_
+ *_****************************************************************************************
+
 
 https://github.com/winterTTr/ace-jump-mode/wiki
 http://rubikitch.com/2015/03/19/sd1409-migemo-ace-jump-mode-dabbrev/
@@ -648,7 +653,6 @@ http://rubikitch.com/2015/03/19/sd1409-migemo-ace-jump-mode-dabbrev/
 (setq ace-jump-mode-move-keys
       (append "asdfghjkl;:]qwertyuiop@zxcvbnm,." nil))
 #+END_SRC
-
 
 * Chapter08 
 ** fllow-mode [8.3]
@@ -932,16 +936,16 @@ summarye.el
 別のバッファでマージする
 : M-x ediff-merge-files
 
-** ediff-regions-wordwise, ediff-regions-linewise
+** ediff-regions-wordwise, ediff-regions-linewise                    :remark:
  http://www.gside.org/blowg/e/user/tma/entry/200711152051
 
  ediff-regions-wordwiseはword単位、
  ediff-regions-linewiseは行単位で比較結果を表示してくれる。
 
- まず M-x ediff-regions-wordwise とした後、比較対象のバッファを2つ指定する。
- (事前に比較するファイルを開いておく必要あり)
- その後、それぞれのバッファが開くので、コピーするときと同じ要領で C-SPACE と M-w で比較対象となる部分を選択。
- 選択後は C-M-c を押す。
+ 手順)
+  1. M-x ediff-regions-wordwise を実行
+  2. 比較対象のバッファを2つ指定 (事前に比較するファイルを開いておく必要あり)
+  3. それぞれのバッファでリージョンを選択し、C-M-c
 
 ** C言語のプリプロセッサを隠す [13.7]
 .emacs
@@ -1633,7 +1637,7 @@ http://bhby39.blogspot.jp/2012/01/yasnippet.html
 <i <TAB>  :  #+index: line 
 <I <TAB>  :  #+include: line 
 
-** 検索 (org-sparse-tree)                                            :remark:
+** org-modeでの検索 (org-sparse-tree)                                :remark:
 [[http://rubikitch.com/2014/10/10/org-sparse-tree-indirect-buffer/][Emacs org-modeの検索機能を16倍パワーアップする方法]]
 C-c /       (org-sparse-tree)
 C-c / /(r)   regexp  ... 指定した正規表現に合致する箇所のみ開き、該当箇所ハイライトして表示
@@ -1653,7 +1657,7 @@ C-c / /(r)   regexp  ... 指定した正規表現に合致する箇所のみ開�
 (define-key org-mode-map (kbd "C-c /") 'org-sparse-tree-indirect-buffer)
 #+END_SRC
 
-** Narrow                                                            :remark:
+** Narrow (org-mode)                                                 :remark:
 特定の箇所だけ表示する。
   org-narrow-to-subtree で表示を変え、widenで元に戻す
 C-x n s     (org-narrow-to-subtree) Narrow buffer to current subtree. 
