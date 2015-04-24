@@ -1230,12 +1230,12 @@ http://orgmode.org/ からダウンロード
 : *ボールド*
 : /イタリック/
 : _アンダーライン_
-: =コード=
+: =コード=   ~コード~
 : +取り消し+
 : ^上付き  ^{ここだけ上付き}にする
 : _下付き  _{ここだけ下付き}にする
   ↓
- *ボールド* /イタリック/ _アンダーライン_ =WWWWWiiiiWWW= +取り消し+
+ *ボールド* /イタリック/ _アンダーライン_ =WWWWWiiiiWWW= ~WWWWWiiiiWWW~ +取り消し+
  ^上付き ^{ここだけ上付き}にする
  _下付き _{ここだけ下付き}にする
 
@@ -1685,6 +1685,72 @@ http://orgmode.org/  からダウンロード
   lispdir = /cygdrive/c/meadow/site-lisp/org-6.35i
 make 
 make install
+
+* helm                                                               :remark:
+
+https://github.com/emacs-helm/helm
+http://tuhdo.github.io/helm-intro.html
+
+** install
+package-list-package から helmをインストール
+#+BEGIN_SRC .emacs.d/init.el
+;; helm
+(require 'helm-config)
+(helm-mode 1)
+#+END_SRC
+
+** 使用方法
+いくつかの標準的なコマンドが置き換わる
+ C-x C-f  find-file           =>`helm-find-files'
+ C-x C-b  list-buffers        =>`helm-buffers-list'
+ M-tab    completion-at-point =>`helm-lisp-completion-at-point'
+ M-s o    occur               =>`helm-occur'
+ M-/      dabbrev-expand      =>`helm-dabbrev'
+
+- help
+   helm の何らかのコマンドの途中で、C-c ?
+
+  全てのhelmコマンド
+ M-x helm-M-x  RET helm-
+ C-x c M-x     RET help-
+
+helm session
+  TAB  選択したファイルに対するmenuを開く
+  C-z  helm sessionを維持する
+
+*** ファイルを開く  C-x C-f   --> ファイルの候補がバッファに表示される。
+ キー入力で絞り込み (SPC区切りで複数)
+ C-SPC マーク
+ M-a   全選択
+ C-j   下位の階層に移動
+ C-l   上位の階層に移動
+ C-t   候補バッファを縦横切り替え
+ 
+ ~/    jump to home directory
+  /    jump to root directory
+
+ M-x helm-for-files  履歴等からもファイルを探せる
+
+
+*** バッファ一覧  C-x b , C-x C-b
+ helm-buffers-list (C-x C-b) から... 
+  ファイル名で絞り込み スペース区切りで複数の条件を指定可能
+  '@<pattern>' を入力するとバッファ内の文字列でも絞り込むことも可能
+
+ <tab> でアクションを選択
+
+
+*** その他
+ (helm-command-prefix) M-y  helm-show-kill-ring   kill ring を表示
+
+
+** 関連パッケージ
+helm-ag
+helm-descbinds
+helm-gtags
+
+
+
 
 
 * その他

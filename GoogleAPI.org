@@ -1,0 +1,437 @@
+
+* 設定（プロジェクト作成とOAuthの設定）
+Google Developer Console にアクセス
+https://console.developers.google.com/project
+
+1. プロジェクトを新規作成
+
+2. 左側のメニューから APIと認証 > APIを選択
+   右側の一覧から Calendar API を選択し、切り替わる画面で 「APIを有効にする」を押す
+
+3. 左側のメニューから APIと認証 > 認証情報を選択
+   +公開 API へのアクセス > 「新しいキーを作成」を押す+
+   OAuth > 「新しいクライアントIDを作成」を押す
+   サービスアカウント を選択して「クライアントIDを作成」を押す
+  「新しい公開キー/秘密キーのペアが生成されました」 というメッセージと共にjsonのファイルがダウンロードされる
+    #+BEGIN_SRC javascript
+    {
+      "private_key_id": "e7815f472cacc85a324f2cdff9dbb18abbe7e986",
+      "private_key": "-----BEGIN PRIVATE KEY-----\nMIICdwIBADANBgkqhkiG9w0BAQEFAASCAmEwggJdAgEAAoGBAMDPUNfMlEwiXOa8\n7CxZOMrvBriy1yzTckQo2MALL+r8nFVl+FgD3SNNiJsc8WnJKCNEvuVdxOsyt00n\nBOY3BGimWUr5A23oUOjJPx+58ocFe0rLTZFWKI7G5qyf8RLd+vIRc76Jt62y++Po\np3uf9nZYnsbsSTsqfAL1HcoGCo+xAgMBAAECgYAyo0AcLQKVrECx6NQuIZCk23ns\ncCvK/g14kTG73jRLhuSYGRvMIdemOeqysjtFCSudd6SbILFjBALYJHNI8xIY5RoI\nW1+jW0VNdvinClsY+1nDCOEydLB6Yzu8GSRy3Op1zQP8AFXWokV2kjsdLo+ernNl\nutwUjGaJEtW4ELJ6QQJBAOpZprBbveZlQtmPO1OZMWLJEavJCyTzzXeoYNnOFMdJ\nNcmhRtbBfPKs/Pw36VfzGW5R6xSxf91rgc6tUCjmrc0CQQDSnz2jBonyri47RYwv\nlVBN4JetpNbHFfOGuBbAmH3rbEQr1W1Xq+YGoMCdSNmWxTu/IvkFFAWpHUYNh5No\n+KV1AkEArduM2lF1dLOzAIxOSxrflJXu0i74YZWt3RPBplRI/f/GM6u+ThyFgdPs\na4FfT6w+NaX4bQWyAqZ7SsUxLubUEQJALtqTyJdkyqKq0C6pf9BUe+6Rb2RzDvi4\nIukCzrddk6iTBblFyLIJysGp95NELEEWCHAMO2/3zmYftlTJmxltHQJBALmKs4yC\ngnzNZZimPDnqBWM8ReJM6vhGwc/jRRrJI2krVY4G4+e26YAcw1rGceXdYa37ImBv\nOmzEOEyaVvBudEs\u003d\n-----END PRIVATE KEY-----\n",
+      "client_email": "42535793099-j45ad3pot59uo3ml9i2rfvku7nij51kg@developer.gserviceaccount.com",
+      "client_id": "42535793099-j45ad3pot59uo3ml9i2rfvku7nij51kg.apps.googleusercontent.com",
+      "type": "service_account"
+    }
+    #+END_SRC        
+    生成を終えると画面上には以下のように表示される。
+    : サービス アカウント
+    :  クライアント ID          42535793099-j45ad3pot59uo3ml9i2rfvku7nij51kg.apps.googleusercontent.com
+    :  メールアドレス           42535793099-j45ad3pot59uo3ml9i2rfvku7nij51kg@developer.gserviceaccount.com
+    :  証明書フィンガープリント  e7815f472cacc85a324f2cdff9dbb18abbe7e986
+
+
+4. メールアドレスをカレンダーの設定から共有に設定する
+
+
+-------------------------
+tama.yankees アカウントで、旧タイプのconsoleでclient id を発行
+("installed application" を選択)
+
+#+BEGIN_EXAMPLE
+Client ID: 	743855320050-j8fgt8llaomom84anqjrrdvvq4ej61dp.apps.googleusercontent.com
+Client secret: 	FTQqQWFa92GNs40zWFBnlpM0
+Redirect URIs: 	urn:ietf:wg:oauth:2.0:oob
+http://localhost
+#+END_EXAMPLE
+
+#+BEGIN_SRC json
+{"installed":
+ {"auth_uri":"https://accounts.google.com/o/oauth2/auth",
+  "client_secret":"FTQqQWFa92GNs40zWFBnlpM0",
+  "token_uri":"https://accounts.google.com/o/oauth2/token",
+  "client_email":"",
+  "redirect_uris":["urn:ietf:wg:oauth:2.0:oob","oob"],
+  "client_x509_cert_url":"",
+  "client_id":"743855320050-j8fgt8llaomom84anqjrrdvvq4ej61dp.apps.googleusercontent.com",
+  "auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs"
+ }
+}
+#+END_SRC
+
+
+
+
+
+* Calendar API
+
+** APIの調査
+以下は APIリファレンスの下にある 'Try It' から実行した結果をまとめたもの。
+ - 実行するにはOAuthを有効にする必要があるが、画面上で有効にすることができた。
+  （最初の一回はGoogleアカウントの一覧が表示され、選択し、許可する、ということを行った）
+   ==> _プログラムから実行する場合はこれをどの様に解決するかを明らかにしなければならない_
+
+ - Googleが用意しているプログラム言語用のAPIは、Java, Python, PHP, Ruby 
+   ==> _Perl用のAPIは(Officialなものは)無いのでPythonあたりを使うか？_
+
+ -- calendarId = mfaejedoiegrcq2logucsh1jrg@group.calendar.google.com
+
+*** CalendarList - list
+https://developers.google.com/google-apps/calendar/v3/reference/calendarList/list 
+#+BEGIN_SRC  CalendarList > list
+{
+ "kind": "calendar#calendarList",
+ "etag": "\"1429082368721000\"",
+ "nextSyncToken": "00001429082368721000",
+ "items": [
+  {
+   "kind": "calendar#calendarListEntry",
+   "etag": "\"1429082368721000\"",
+   "id": "mfaejedoiegrcq2logucsh1jrg@group.calendar.google.com",
+   "summary": "多摩ヤンキース",
+   "timeZone": "Asia/Tokyo",
+   "colorId": "16",
+   "backgroundColor": "#4986e7",
+   "foregroundColor": "#000000",
+   "selected": true,
+   "accessRole": "owner",
+   "defaultReminders": [
+   ]
+  },
+  {
+   "kind": "calendar#calendarListEntry",
+   "etag": "\"1429055551157000\"",
+   "id": "tama.yankees@gmail.com",
+   "summary": "Plan",
+   "timeZone": "Asia/Tokyo",
+   "colorId": "8",
+   "backgroundColor": "#16a765",
+   "foregroundColor": "#000000",
+   "accessRole": "owner",
+   "defaultReminders": [
+    {
+     "method": "popup",
+     "minutes": 30
+    }
+   ],
+   "notificationSettings": {
+    "notifications": [
+     {
+      "type": "eventCreation",
+      "method": "email"
+     },
+     {
+      "type": "eventChange",
+      "method": "email"
+     },
+     {
+      "type": "eventCancellation",
+      "method": "email"
+     },
+     {
+      "type": "eventResponse",
+      "method": "email"
+     }
+    ]
+   },
+   "primary": true
+  },
+  {
+   "kind": "calendar#calendarListEntry",
+   "etag": "\"1429080300803000\"",
+   "id": "#contacts@group.v.calendar.google.com",
+   "summary": "誕生日",
+   "description": "Google の連絡先や Google+ の「あなたのサークル」内のユーザーの誕生日を表示します。また、Google の連絡先に登録されている記念日や予定があれば、それも表示されます。",
+   "timeZone": "Asia/Tokyo",
+   "colorId": "13",
+   "backgroundColor": "#92e1c0",
+   "foregroundColor": "#000000",
+   "accessRole": "reader",
+   "defaultReminders": [
+   ]
+  },
+  {
+   "kind": "calendar#calendarListEntry",
+   "etag": "\"1429080301516000\"",
+   "id": "ja.japanese#holiday@group.v.calendar.google.com",
+   "summary": "日本の祝日",
+   "description": "日本の祝日と行事",
+   "timeZone": "Asia/Tokyo",
+   "colorId": "7",
+   "backgroundColor": "#42d692",
+   "foregroundColor": "#000000",
+   "selected": true,
+   "accessRole": "reader",
+   "defaultReminders": [
+   ]
+  }
+ ]
+}
+#+END_SRC
+
+*** CalendarList - get
+https://developers.google.com/google-apps/calendar/v3/reference/calendarList/get
+calendarId = mfaejedoiegrcq2logucsh1jrg@group.calendar.google.com を指定
+#+BEGIN_SRC #+BEGIN_SRC  CalendarList > get
+{
+ "kind": "calendar#calendarListEntry",
+ "etag": "\"1429082368721000\"",
+ "id": "mfaejedoiegrcq2logucsh1jrg@group.calendar.google.com",
+ "summary": "多摩ヤンキース",
+ "timeZone": "Asia/Tokyo",
+ "colorId": "16",
+ "backgroundColor": "#4986e7",
+ "foregroundColor": "#000000",
+ "selected": true,
+ "accessRole": "owner",
+ "defaultReminders": [
+ ]
+}
+#+END_SRC
+
+*** Calendars - get
+https://developers.google.com/google-apps/calendar/v3/reference/calendars/get
+calendarId = mfaejedoiegrcq2logucsh1jrg@group.calendar.google.com を指定
+#+BEGIN_SRC Calendars > get
+{
+ "kind": "calendar#calendar",
+ "etag": "\"kX9wUWsFGf6GS8ugZrWR1L9VQpY/oSz6I6liZWQJE4gDpwRGZhiGSt0\"",
+ "id": "mfaejedoiegrcq2logucsh1jrg@group.calendar.google.com",
+ "summary": "多摩ヤンキース",
+ "timeZone": "Asia/Tokyo"
+}
+#+END_SRC
+
+*** Events - list
+https://developers.google.com/google-apps/calendar/v3/reference/events/list
+リクエストに、fields='items(description,end,location,start,summary)' と指定すれば各予定の最低限の情報のみ取得できる
+
+#+BEGIN_SRC Events > list
+{
+ "kind": "calendar#events",
+ "etag": "\"1429082365976000\"",
+ "summary": "多摩ヤンキース",
+ "updated": "2015-04-15T07:19:25.976Z",
+ "timeZone": "Asia/Tokyo",
+ "accessRole": "owner",
+ "defaultReminders": [
+ ],
+ "nextSyncToken": "CMC7ndbi98QCEMC7ndbi98QCGAU=",
+ "items": [
+  {
+   "kind": "calendar#event",
+   "etag": "\"2858106638664000\"",
+   "id": "_95hm2r1g64p68cph71i3cd9j61ij6o9pchj64e9m68qjcor26gq3icb168",
+   "status": "confirmed",
+   "htmlLink": "https://www.google.com/calendar/event?eid=Xzk1aG0ycjFnNjRwNjhjcGg3MWkzY2Q5ajYxaWo2bzlwY2hqNjRlOW02OHFqY29yMjZncTNpY2IxNjggbWZhZWplZG9pZWdyY3EybG9ndWNzaDFqcmdAZw",
+   "created": "1900-01-01T12:00:00.000Z",
+   "updated": "2015-04-14T23:15:19.332Z",
+   "summary": "TY練習の予定",
+   "description": "今のところ練習の予定",
+   "location": "諏訪北公園",
+   "creator": {
+    "email": "tama.yankees@gmail.com"
+   },
+   "organizer": {
+    "email": "mfaejedoiegrcq2logucsh1jrg@group.calendar.google.com",
+    "displayName": "多摩ヤンキース2",
+    "self": true
+   },
+   "start": {
+    "dateTime": "2010-10-23T10:00:00+09:00"
+   },
+   "end": {
+    "dateTime": "2010-10-23T12:00:00+09:00"
+   },
+   "iCalUID": "Ical012d318d6530e3a9dfb96256cb4491a2",
+   "sequence": 0,
+   "reminders": {
+    "useDefault": true
+   }
+  },
+  {
+   "kind": "calendar#event",
+   "etag": "\"2858106638664000\"",
+   "id": "_95hm2r1gcoo3adb369ijccb374rm6c31ccr62pj6clgmaopi75hj4ohm6o",
+   "status": "confirmed",
+   "htmlLink": "https://www.google.com/calendar/event?eid=Xzk1aG0ycjFnY29vM2FkYjM2OWlqY2NiMzc0cm02YzMxY2NyNjJwajZjbGdtYW9waTc1aGo0b2htNm8gbWZhZWplZG9pZWdyY3EybG9ndWNzaDFqcmdAZw",
+   "created": "1900-01-01T12:00:00.000Z",
+   "updated": "2015-04-14T23:15:19.332Z",
+   "summary": "TY忘年会",
+   "description": "忘年会の詳細についてお知らせです\n参加可否は１２月１１日中にお願いします。\n日時：１２月１５日（土）１８時から\n集合：１０分前ぐらいに調布駅東口改札\n※直接店に行ってもかまいません。\n店：調布ダイニング kirakutei KIRAKUYA\nhttp://r.gnavi.co.jp/g099303/\nカジュアルな南欧料理です\n会費：￥３５００（一律）\n※コース料理２Ｈのみ放題\n今回は安価なので会費は一律にしました。\n楽しみましょう！",
+   "location": "調布",
+   "creator": {
+    "email": "tama.yankees@gmail.com"
+   },
+   "organizer": {
+    "email": "mfaejedoiegrcq2logucsh1jrg@group.calendar.google.com",
+    "displayName": "多摩ヤンキース2",
+    "self": true
+   },
+   "start": {
+    "dateTime": "2012-12-15T18:00:00+09:00"
+   },
+   "end": {
+    "dateTime": "2012-12-15T19:00:00+09:00"
+   },
+   "iCalUID": "Ical0f055c2e61c97c0ac6affeaec29c2b66",
+   "sequence": 0,
+   "reminders": {
+    "useDefault": true
+   }
+  },
+  {
+   "kind": "calendar#event",
+   "etag": "\"2858106638664000\"",
+   "id": "_95hm2r1h65h38dhi60q3ce9o69gmaeb5clhm6chk64qjccj1ccp36dplck",
+   "status": "confirmed",
+   "htmlLink": "https://www.google.com/calendar/event?eid=Xzk1aG0ycjFoNjVoMzhkaGk2MHEzY2U5bzY5Z21hZWI1Y2xobTZjaGs2NHFqY2NqMWNjcDM2ZHBsY2sgbWZhZWplZG9pZWdyY3EybG9ndWNzaDFqcmdAZw",
+   "created": "1900-01-01T12:00:00.000Z",
+   "updated": "2015-04-14T23:15:19.332Z",
+   "summary": "TY練習試合決定",
+   "description": "対 一橋学園\nhttp://www.ikz.jp/hp/bashigaku/\n小平市のチームです\n集合：１０：３０\n１時間ほどＵＰのあと試合開始",
+   "location": "調布西町野球場",
+   "creator": {
+    "email": "tama.yankees@gmail.com"
+   },
+   "organizer": {
+    "email": "mfaejedoiegrcq2logucsh1jrg@group.calendar.google.com",
+    "displayName": "多摩ヤンキース2",
+    "self": true
+   },
+   "start": {
+    "dateTime": "2013-03-10T11:00:00+09:00"
+   },
+   "end": {
+    "dateTime": "2013-03-10T15:00:00+09:00"
+   },
+   "iCalUID": "Ical11b462046982ae9eecc241562ac2375e",
+   "sequence": 0,
+   "reminders": {
+    "useDefault": true
+   }
+  },
+  {
+   "kind": "calendar#event",
+   "etag": "\"2858106638664000\"",
+   "id": "_95hm2r1h6hhmcp9ncdgjcdhk68o64phk60rm8cj4c8qm4dpj6som2o9p74",
+   "status": "confirmed",
+   "htmlLink": "https://www.google.com/calendar/event?eid=Xzk1aG0ycjFoNmhobWNwOW5jZGdqY2RoazY4bzY0cGhrNjBybThjajRjOHFtNGRwajZzb20ybzlwNzQgbWZhZWplZG9pZWdyY3EybG9ndWNzaDFqcmdAZw",
+   "created": "1900-01-01T12:00:00.000Z",
+   "updated": "2015-04-14T23:15:19.332Z",
+   "summary": "TY予定",
+   "description": "練習予定",
+   "location": "諏訪南公園",
+   "creator": {
+    "email": "tama.yankees@gmail.com"
+   },
+   "organizer": {
+    "email": "mfaejedoiegrcq2logucsh1jrg@group.calendar.google.com",
+    "displayName": "多摩ヤンキース2",
+    "self": true
+   },
+   "start": {
+    "dateTime": "2012-08-22T08:00:00+09:00"
+   },
+   "end": {
+    "dateTime": "2012-08-22T09:00:00+09:00"
+   },
+   "iCalUID": "Ical14cfe7ca66420bf407d2db5b7371aa99",
+   "sequence": 0,
+   "reminders": {
+    "useDefault": true
+   }
+  },
+  :
+  :
+  :
+  :
+#+END_SRC
+
+*** Events - get
+https://developers.google.com/google-apps/calendar/v3/reference/events/get
+fields = created,description,end,id,location,start,summary,updated
+#+BEGIN_SRC 
+{
+ "id": "_95hm2r1gcoo3adb369ijccb374rm6c31ccr62pj6clgmaopi75hj4ohm6o",
+ "created": "1900-01-01T12:00:00.000Z",
+ "updated": "2015-04-14T23:15:19.332Z",
+ "summary": "TY忘年会",
+ "description": "忘年会の詳細についてお知らせです\n参加可否は１２月１１日中にお願いします。\n日時：１２月１５日（土）１８時から\n集合：１０分前ぐらいに調布駅東口改札\n※直接店に行ってもかまいません。\n店：調布ダイニング kirakutei KIRAKUYA\nhttp://r.gnavi.co.jp/g099303/\nカジュアルな南欧料理です\n会費：￥３５００（一律）\n※コース料理２Ｈのみ放題\n今回は安価なので会費は一律にしました。\n楽しみましょう！",
+ "location": "調布",
+ "start": {
+  "dateTime": "2012-12-15T18:00:00+09:00"
+ },
+ "end": {
+  "dateTime": "2012-12-15T19:00:00+09:00"
+ }
+}
+#+END_SRC
+
+*** Events - insert
+https://developers.google.com/google-apps/calendar/v3/reference/events/insert
+
+**** Request
+#+BEGIN_SRC 
+POST https://www.googleapis.com/calendar/v3/calendars/mfaejedoiegrcq2logucsh1jrg%40group.calendar.google.com/events?key={YOUR_API_KEY} 
+{
+ "end": {
+  "date": "2015-04-15"
+ },
+ "start": {
+  "date": "2015-04-15"
+ },
+ "summary": "テスト"
+} 
+#+END_SRC
+
+**** Response
+#+BEGIN_SRC 
+{
+ "kind": "calendar#event",
+ "etag": "\"2858170558682000\"",
+ "id": "ff7mkpe8qkt0nnes52oejrp72s",
+ "status": "confirmed",
+ "htmlLink": "https://www.google.com/calendar/event?eid=ZmY3bWtwZThxa3Qwbm5lczUyb2VqcnA3MnMgbWZhZWplZG9pZWdyY3EybG9ndWNzaDFqcmdAZw",
+ "created": "2015-04-15T08:07:59.000Z",
+ "updated": "2015-04-15T08:07:59.341Z",
+ "summary": "テスト",
+ "creator": {
+  "email": "tama.yankees@gmail.com"
+ },
+ "organizer": {
+  "email": "mfaejedoiegrcq2logucsh1jrg@group.calendar.google.com",
+  "displayName": "多摩ヤンキース",
+  "self": true
+ },
+ "start": {
+  "date": "2015-04-15"
+ },
+ "end": {
+  "date": "2015-04-15"
+ },
+ "iCalUID": "ff7mkpe8qkt0nnes52oejrp72s@google.com",
+ "sequence": 0,
+ "reminders": {
+  "useDefault": true
+ }
+}
+#+END_SRC
+
+*** Events - update
+https://developers.google.com/google-apps/calendar/v3/reference/events/update
+
+calenderIdを指定する以外は、insertと同じ
+
+** ロジックの検討
+扱うカレンダーは１つのみで、Calender IDは覚えておけばよいので、 CalendarList や Calendars は用いる機会が無い
+ - 新規登録   
+    Events-insert()
+
+ - 更新   insert()のPythonコードのサンプルを参考
+    Events-list(カレンダーID) から更新すべきカレンダーを取得しイベントIDを取得
+     *リクエストパラメータ 'q' で検索条件が指定できる模様*
+
+    Events-get(カレンダーID,イベントID) でイベント情報を取得、必要な箇所を更新
+
+    update()で更新
+
+

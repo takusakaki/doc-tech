@@ -1,0 +1,81 @@
+* 導入
+
+http://plantuml.sourceforge.net/
+
+
+** Install
+http://d.hatena.ne.jp/a_bicky/20121016/1350347857
+
+** 実行
+$ java -jar /usr/local/jars/plantuml.jar sample.uml
+
+
+** Emacs org-mode
+.emacs
+#+BEGIN_SRC 
+;; PlantUML
+(setq org-plantuml-jar-path "~/app/plantuml.jar")
+(require 'ob-plantuml)
+(setq plantuml-jar-path "~/app/plantuml.jar")
+#+END_SRC
+
+org-mode シーケンス図
+#+BEGIN_SRC plantuml :file sample2.png :cmdline -charset UTF-8
+title テスト\n<u>シーケンス</u>
+
+participant アリス << Alice >>
+participant ボブ << (C, #ADD182) Bob >>
+hide footbox
+skin BlueModern
+
+== Let's Start! ==
+
+activate アリス
+
+アリス ->  ボブ: Authentication Request
+note right: request-1
+activate ボブ
+
+アリス <-- ボブ: Authentication Response
+note left
+        <size:16>response-1</size>
+        <b>a</b>
+        <i>b</i>
+        <font color="red">c</font>
+end note        
+deactivate ボブ
+        
+
+== group, alt, loop ==
+
+
+group conversation work
+
+  alt case-1
+    アリス ->  ボブ: message-1
+  else case-2
+    アリス ->  ボブ: message-2
+  end
+  
+  loop 10 times
+    アリス ->  ボブ: talk
+              ボブ -> ボブ : throw...
+  end
+  
+  アリス <-- ボブ: call back
+  destroy アリス
+end
+
+
+
+#+END_SRC
+
+#+RESULTS:
+[[file:sample2.png]]
+
+
+
+
+
+
+* 記述
